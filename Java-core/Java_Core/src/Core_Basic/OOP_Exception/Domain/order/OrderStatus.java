@@ -1,4 +1,3 @@
 package Core_Basic.OOP_Exception.Domain.order;
 
-public class OrderStatus {
-}
+public enum OrderStatus { NEW, PAID, FAILED }

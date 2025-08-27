@@ -14,8 +14,8 @@ public abstract class PaymentProcessor {
             throw new PaymentFailedException("Capture failed", e);
         }
     }
-    protected void precheck(Order order){ /* validate order state, inventory... */ }
+    protected void precheck(Order order){ }
     protected abstract String authorize(Order order) throws PaymentFailedException;
     protected abstract void capture(String authorization, Order order) throws Exception;
-    protected void receipt(Order order){ /* default: no-op */ }
+    protected void receipt(Order order){ }
 }

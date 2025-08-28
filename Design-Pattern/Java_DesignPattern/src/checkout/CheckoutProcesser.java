@@ -24,4 +24,5 @@ public abstract class CheckoutProcesser {
     protected void postActions(Receipt r) {
         System.out.println("[AUDIT] tx=" + r.toString().hashCode());
     }
+
 }

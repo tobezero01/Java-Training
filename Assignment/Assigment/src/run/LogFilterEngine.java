@@ -11,7 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Locale;
 
-/// thực thi
+/// Thực thi
 /// - Lọc bản ghi dựa trên filter
 /// - Preview N dòng đầu tiên khớp bộ lọc (previewTop)
 /// - Quét toàn bộ file và ghi các dòng khớp ra output (exportFiltered)

@@ -5,7 +5,7 @@ import com.skyapi.weatherforecast.realtime.RealtimeWeatherDTO;
 import java.util.HashMap;
 import java.util.Objects;
 
-public class RealtimeWeatherFieldFilter {
+public class RealtimeWeatherNullFilter {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof RealtimeWeatherDTO ) {

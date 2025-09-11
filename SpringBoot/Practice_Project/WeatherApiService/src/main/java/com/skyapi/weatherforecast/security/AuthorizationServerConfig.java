@@ -50,6 +50,7 @@ public class AuthorizationServerConfig {
         return new BCryptPasswordEncoder();
     }
 
+    // đăng ký client từ db với quyền từ AppRole
     @Bean
     public RegisteredClientRepository registeredClientRepository(ClientAppRepository clientAppRepository) {
         return new RegisteredClientRepository() {
@@ -76,6 +77,7 @@ public class AuthorizationServerConfig {
         };
     }
 
+    //tùy biến JWT khi phát hành
     @Bean
     public OAuth2TokenCustomizer<JwtEncodingContext> tokenCustomizer() {
         return (context) -> {

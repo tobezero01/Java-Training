@@ -6,7 +6,7 @@ import com.skyapi.weatherforecast.hourly.HourlyWeatherDTO;
 import java.util.HashMap;
 import java.util.Objects;
 
-public class HourlyWeatherFieldFilter {
+public class HourlyWeatherNullFilter {
 
     @Override
     public boolean equals(Object obj) {

@@ -94,7 +94,6 @@ public class DailyWeatherApiController {
         if (listDTO.isEmpty()) {
             throw new BadRequestException("Daily forecast data cannot be empty");
         }
-
         // Converting DTO list to entity list
         List<DailyWeather> dailyWeatherList = listDTO2ListEntity(listDTO);
 
@@ -113,7 +112,6 @@ public class DailyWeatherApiController {
             DailyWeatherDTO dto = modelMapper.map(dailyWeather, DailyWeatherDTO.class);
             listDTO.addDailyWeatherDTO(dto);
         });
-
         return listDTO;
     }
 

@@ -6,7 +6,24 @@
   <component name="ChangeListManager">
     <list default="true" id="bf737fcc-5d73-4693-a3ea-3bee8573cd99" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/../../Bộ Câu hỏi theo chủ đề.docx" beforeDir="false" afterPath="$PROJECT_DIR$/../../Bộ Câu hỏi theo chủ đề.docx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../../Database/eshop.sql" beforeDir="false" afterPath="$PROJECT_DIR$/../../Database/eshop.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WeatherApiService/Weather_Service.log" beforeDir="false" afterPath="$PROJECT_DIR$/WeatherApiService/Weather_Service.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WeatherApiService/Weather_Service.log.2024-11-10.0.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/WeatherApiService/Weather_Service.log.2024-11-11.0.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/WeatherApiService/Weather_Service.log.2024-11-12.0.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/WeatherApiService/Weather_Service.log.2024-11-13.0.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/WeatherApiService/src/main/java/com/skyapi/weatherforecast/customFieldFilter/DailyWeatherFieldFilter.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/WeatherApiService/src/main/java/com/skyapi/weatherforecast/customFieldFilter/HourlyWeatherFieldFilter.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/WeatherApiService/src/main/java/com/skyapi/weatherforecast/customFieldFilter/RealtimeWeatherFieldFilter.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/WeatherApiService/src/main/java/com/skyapi/weatherforecast/daily/DailyWeatherApiController.java" beforeDir="false" afterPath="$PROJECT_DIR$/WeatherApiService/src/main/java/com/skyapi/weatherforecast/daily/DailyWeatherApiController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WeatherApiService/src/main/java/com/skyapi/weatherforecast/daily/DailyWeatherDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/WeatherApiService/src/main/java/com/skyapi/weatherforecast/daily/DailyWeatherDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WeatherApiService/src/main/java/com/skyapi/weatherforecast/full/FullWeatherDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/WeatherApiService/src/main/java/com/skyapi/weatherforecast/full/FullWeatherDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WeatherApiService/src/main/java/com/skyapi/weatherforecast/hourly/HourlyWeatherDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/WeatherApiService/src/main/java/com/skyapi/weatherforecast/hourly/HourlyWeatherDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WeatherApiService/src/main/java/com/skyapi/weatherforecast/realtime/RealtimeWeatherDTO.java" beforeDir="false" afterPath="$PROJECT_DIR$/WeatherApiService/src/main/java/com/skyapi/weatherforecast/realtime/RealtimeWeatherDTO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/WeatherApiService/src/main/java/com/skyapi/weatherforecast/security/AuthorizationServerConfig.java" beforeDir="false" afterPath="$PROJECT_DIR$/WeatherApiService/src/main/java/com/skyapi/weatherforecast/security/AuthorizationServerConfig.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Weather_Service.log" beforeDir="false" afterPath="$PROJECT_DIR$/Weather_Service.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Weather_Service.log.2024-11-01.0.gz" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Weather_Service.log.2024-11-04.0.gz" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -16,33 +33,84 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/../.." />
   </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;tobezero01&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/tobezero01/Java-Training.git&quot;,
+    &quot;accountId&quot;: &quot;680a9441-87f2-498c-94bb-85b7b7e1354a&quot;
+  }
+}</component>
   <component name="MarkdownSettingsMigration">
     <option name="stateVersion" value="1" />
   </component>
-  <component name="MavenImportPreferences">
-    <option name="generalSettings">
-      <MavenGeneralSettings>
-        <option name="useMavenConfig" value="true" />
-      </MavenGeneralSettings>
-    </option>
-    <option name="importingSettings">
-      <MavenImportingSettings>
-        <option name="workspaceImportEnabled" value="true" />
-      </MavenImportingSettings>
-    </option>
-  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 0
+}</component>
   <component name="ProjectId" id="32UeCcJ9s3aLCzPpZNF6DaXzUeo" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.OpenProjectViewOnStart": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "last_opened_file_path": "D:/Java/Java-Training/SpringBoot/Practice_Project"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.WeatherApiServiceApplication.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.ClientAppRepositoryTests.testAddSystemApp.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/Java/Java-Training/SpringBoot/Practice_Project&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.pluginManager&quot;
   }
-}]]></component>
+}</component>
+  <component name="RunManager" selected="Application.WeatherApiServiceApplication">
+    <configuration name="WeatherApiServiceApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.skyapi.weatherforecast.WeatherApiServiceApplication" />
+      <module name="WeatherApiService" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/WeatherApiService" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.skyapi.weatherforecast.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="ClientAppRepositoryTests.testAddSystemApp" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="WeatherApiService" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.skyapi.weatherforecast.clientApp.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.skyapi.weatherforecast.clientApp" />
+      <option name="MAIN_CLASS_NAME" value="com.skyapi.weatherforecast.clientApp.ClientAppRepositoryTests" />
+      <option name="METHOD_NAME" value="testAddSystemApp" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <list>
+      <item itemvalue="Application.WeatherApiServiceApplication" />
+      <item itemvalue="JUnit.ClientAppRepositoryTests.testAddSystemApp" />
+    </list>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.WeatherApiServiceApplication" />
+        <item itemvalue="JUnit.ClientAppRepositoryTests.testAddSystemApp" />
+      </list>
+    </recent_temporary>
+  </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
@@ -53,5 +121,16 @@
       <updated>1757479454126</updated>
     </task>
     <servers />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/WeatherApiService/src/main/java/com/skyapi/weatherforecast/security/JwtConfig.java</url>
+          <line>38</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>

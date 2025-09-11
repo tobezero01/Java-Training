@@ -2,7 +2,6 @@ package com.skyapi.weatherforecast.full;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.skyapi.weatherforecast.customFieldFilter.RealtimeWeatherFieldFilter;
 import com.skyapi.weatherforecast.daily.DailyWeatherDTO;
 import com.skyapi.weatherforecast.hourly.HourlyWeatherDTO;
 import com.skyapi.weatherforecast.realtime.RealtimeWeatherDTO;

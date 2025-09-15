@@ -20,8 +20,18 @@ import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import java.time.Instant;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @Tag(name = "Realtime Weather", description = "API for retrieving and updating real-time weather data")
@@ -88,11 +98,30 @@ public class RealtimeWeatherApiController {
         try {
             RealtimeWeather realtimeWeather = realtimeWeatherService.getByLocationCode(locationCode);
             RealtimeWeatherDTO dto = entity2DTO(realtimeWeather);
-            return ResponseEntity.ok(addLinksByLocationCode(dto, locationCode));
-        } catch (LocationNotFoundException e) {
+
+           return includeLastModifiedTime(realtimeWeather, dto, locationCode);
+       } catch (LocationNotFoundException e) {
             LOGGER.error(e.getMessage(), e);
             return ResponseEntity.notFound().build();
         }
+    }
+
+    private ResponseEntity<?> includeLastModifiedTime(RealtimeWeather realtimeWeather, RealtimeWeatherDTO dto, String locationCode) {
+        Instant lastModifiedTime = realtimeWeather.getLastUpdated().toInstant();
+
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+        Optional<String> ifModifiedSince = Optional.ofNullable( request.getHeader("If-Modified-Since"));
+
+        if (ifModifiedSince.isPresent()) {
+            Instant ifModifiedSinceTime = Instant.from(DateTimeFormatter.RFC_1123_DATE_TIME.withZone(ZoneOffset.UTC).parse(ifModifiedSince.get()));
+            if (!lastModifiedTime.isAfter(ifModifiedSinceTime)) {
+                return ResponseEntity.status(304).build();
+            }
+        }
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(30, TimeUnit.MINUTES).cachePublic())
+                .lastModified(lastModifiedTime)
+                .body(addLinksByLocationCode(dto, locationCode));
     }
 
 

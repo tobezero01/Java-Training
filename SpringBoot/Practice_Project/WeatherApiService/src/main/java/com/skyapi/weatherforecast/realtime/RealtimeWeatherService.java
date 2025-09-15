@@ -6,6 +6,9 @@ import com.skyapi.weatherforecast.exception.LocationNotFoundException;
 import com.skyapi.weatherforecast.location.LocationRepository;
 import com.skyapi.weatherforecast.location.LocationService;
 import net.bytebuddy.implementation.bytecode.Throw;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +25,8 @@ public class RealtimeWeatherService {
         this.realtimeWeatherRepository = realtimeWeatherRepository;
         this.locationRepository = locationRepository;
     }
-
+    @Cacheable(value = "realtimeWeatherByIPCache",
+            key = "{#location.countryCode, #location.cityName}")
     public RealtimeWeather getByLocation(Location location) throws LocationNotFoundException {
         String countryCode = location.getCountryCode();
         String city = location.getCityName();
@@ -35,6 +39,7 @@ public class RealtimeWeatherService {
         return realtimeWeather;
     }
 
+    @Cacheable("realtimeWeatherByCodeCache")
     public RealtimeWeather getByLocationCode(String code) throws LocationNotFoundException {
         RealtimeWeather realtimeWeather = realtimeWeatherRepository.findByLocationCode(code);
 
@@ -44,6 +49,8 @@ public class RealtimeWeatherService {
         return realtimeWeather;
     }
 
+    @CachePut(cacheNames = "realtimeWeatherByCodeCache", key = "#locationCode")
+    @CacheEvict(cacheNames = "realtimeWeatherByIPCache", allEntries = true)
     public RealtimeWeather update(String locationCode, RealtimeWeather updatedRealtimeWeather) throws LocationNotFoundException {
         Location location = locationRepository.findByCode(locationCode);
 

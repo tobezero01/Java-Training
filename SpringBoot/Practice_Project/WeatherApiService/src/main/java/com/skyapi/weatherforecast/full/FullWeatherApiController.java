@@ -12,12 +12,16 @@ import com.skyapi.weatherforecast.realtime.RealtimeWeatherApiController;
 import jakarta.servlet.http.HttpServletRequest;
 import org.modelmapper.ModelMapper;
 import org.springframework.hateoas.EntityModel;
+import org.springframework.http.CacheControl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+
+import java.util.concurrent.TimeUnit;
+
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 @RestController
 @RequestMapping("/v1/full")
@@ -51,7 +55,11 @@ public class FullWeatherApiController {
         Location locationInDB = fullWeatherService.getByLocation(locationFromIP);
 
         FullWeatherDTO dto = entity2DTO(locationInDB);
-        return ResponseEntity.ok(modelAssembler.toModel(dto));
+
+        // cache control header
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(30, TimeUnit.MINUTES).cachePublic())
+                .body(modelAssembler.toModel(dto));
     }
 
     @Operation(summary = "Return full weather forecast information for a specific location code", tags = { "Full Weather Forecast" })
@@ -64,7 +72,10 @@ public class FullWeatherApiController {
     public ResponseEntity<?> getFullWeatherByLocationCode(@PathVariable("locationCode") String locationCode) {
         Location locationInDB = fullWeatherService.get(locationCode);
         FullWeatherDTO dto = entity2DTO(locationInDB);
-        return ResponseEntity.ok(addLinksByLocationCode(dto, locationCode));
+
+        return ResponseEntity.ok()
+                .cacheControl(CacheControl.maxAge(30, TimeUnit.MINUTES).cachePublic())
+                .body(modelAssembler.toModel(dto));
     }
 
     @Operation(summary = "Update full weather forecast information for a specific location by code", tags = { "Full Weather Forecast" })

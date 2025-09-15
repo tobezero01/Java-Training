@@ -6,6 +6,7 @@ import com.skyapi.weatherforecast.common.Location;
 import com.skyapi.weatherforecast.exception.GeolocationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -26,6 +27,7 @@ public class GeolocationService {
         }
     }
 
+    @Cacheable("geolocationCache")
     public Location getLocation(String ipAddress) throws GeolocationException {
         try {
             IPResult ipResult = ipLocator.IPQuery(ipAddress);

@@ -6,6 +6,9 @@ import com.skyapi.weatherforecast.common.Location;
 import com.skyapi.weatherforecast.common.RealtimeWeather;
 import com.skyapi.weatherforecast.exception.LocationNotFoundException;
 import com.skyapi.weatherforecast.location.LocationRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,6 +21,7 @@ public class FullWeatherService {
         this.locationRepository = locationRepository;
     }
 
+    @Cacheable(cacheNames = "fullWeatherByIPCache", key = "{#locationFromIP.countryCode, #locationFromIP.cityName, #currentHour}")
     public Location getByLocation(Location locationFromIP) {
         String cityName = locationFromIP.getCityName();
         String locationCode = locationFromIP.getCountryCode();
@@ -31,6 +35,7 @@ public class FullWeatherService {
         return locationInDB;
     }
 
+
     public Location get(String locationCode) {
         Location location =  locationRepository.findByCode(locationCode);
         if (location == null) {
@@ -40,6 +45,8 @@ public class FullWeatherService {
         return location;
     }
 
+    @CachePut(cacheNames = "locationByCodeCache", key = "#locationCode")
+    @CacheEvict(cacheNames = "fullWeatherByIPCache", allEntries = true)
     public Location update(String locationCode, Location locationInRequest) {
         Location locationInDB = locationRepository.findByCode(locationCode);
         if (locationInDB == null) {

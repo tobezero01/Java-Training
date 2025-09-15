@@ -4,6 +4,8 @@ import com.skyapi.weatherforecast.common.HourlyWeather;
 import com.skyapi.weatherforecast.common.Location;
 import com.skyapi.weatherforecast.exception.LocationNotFoundException;
 import com.skyapi.weatherforecast.location.LocationRepository;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,6 +26,7 @@ public class HourlyWeatherService {
         this.locationRepository = locationRepository;
     }
 
+    @Cacheable(cacheNames = "hourlyWeatherByIPCache", key = "{#location.countryCode, #location.cityName, #currentHour}")
     public List<HourlyWeather> getByLocation(Location location, int currentHour) throws LocationNotFoundException {
         Location locationInDB = locationRepository.findByCountryCodeAndCityName(
                 location.getCountryCode(), location.getCityName()
@@ -35,6 +38,7 @@ public class HourlyWeatherService {
         return hourlyWeatherRepository.findByLocationCode(locationInDB.getCode(), currentHour);
     }
 
+    @Cacheable("hourlyWeatherByCodeCache")
     public List<HourlyWeather> getByLocationCode(String locationCode, int currentHour) throws LocationNotFoundException {
         Location locationInDB = locationRepository.findByCode(locationCode);
         if (locationInDB == null) {
@@ -44,6 +48,7 @@ public class HourlyWeatherService {
         return hourlyWeatherRepository.findByLocationCode(locationCode, currentHour);
     }
 
+    @CacheEvict(cacheNames = {"hourlyWeatherByCodeCache", "hourlyWeatherByIPCache"}, allEntries = true)
     public List<HourlyWeather> updateByLocationCode(String locationCode, List<HourlyWeather> hourlyWeathersRequest) throws LocationNotFoundException {
         Location location = locationRepository.findByCode(locationCode);
 

@@ -9,22 +9,29 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.hateoas.PagedModel;
-import org.springframework.hateoas.server.core.Relation;
+import org.springframework.http.CacheControl;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 import jakarta.validation.Valid;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
 import java.net.URI;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 @RestController
 @RequestMapping("/v1/locations")
@@ -94,7 +101,6 @@ public class LocationApiController {
             filterFields.put("countryCode", countryCode);
         }
 
-
         Page<Location> page = locationService.listByPage(pageNum - 1, pageSize, propertyMap.get(sortField), filterFields);
         List<Location> locations = page.getContent();
 
@@ -102,7 +108,11 @@ public class LocationApiController {
             return ResponseEntity.noContent().build();
         }
 
-        return ResponseEntity.ok(addPageMetadataAndLink2Collection(locations, page, sortField, enabled, regionName, countryCode));
+        // expire 7 days from now header
+        HttpHeaders headers = new HttpHeaders();
+        headers.setExpires(Instant.now().plus(7, ChronoUnit.DAYS));
+
+        return new ResponseEntity<>(addPageMetadataAndLink2Collection(locations, page, sortField, enabled, regionName, countryCode), headers, HttpStatus.OK);
     }
 
 
@@ -165,7 +175,23 @@ public class LocationApiController {
         if (location == null) {
             return ResponseEntity.notFound().build(); // 404 nếu không tìm thấy
         }
-        return ResponseEntity.ok(location); // 200 nếu tìm thấy
+
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+
+        String ifNonMatch = request.getHeader("If-Not-Match");
+
+        // eTag header
+        String eTag = "\"" + Objects.hash(location.getCode(), location.getCityName(), location.getRegionName(),
+                location.getCountryCode(), location.getCountryName()) + "\"";
+
+        if (eTag.equals(ifNonMatch) ) {
+            return ResponseEntity.status(304).build();
+        }
+
+        return ResponseEntity.ok().cacheControl(CacheControl.maxAge(7, TimeUnit.DAYS).cachePublic())
+                .eTag(eTag)
+                .body(location);
+
     }
 
     @Operation(summary = "Update location", description = "Update an existing location by its code.")

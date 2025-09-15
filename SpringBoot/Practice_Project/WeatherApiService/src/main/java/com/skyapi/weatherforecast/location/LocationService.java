@@ -2,6 +2,9 @@ package com.skyapi.weatherforecast.location;
 
 import com.skyapi.weatherforecast.common.Location;
 import com.skyapi.weatherforecast.exception.LocationNotFoundException;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,9 +25,12 @@ public class LocationService {
         this.locationRepository = locationRepository;
     }
 
+    @CachePut(cacheNames = "locationCacheByCode", key = "#location.code")
+    @CacheEvict(cacheNames = "locationCacheByPagination", allEntries = true)
     public Location add(Location location) {
         return locationRepository.save(location);
     }
+
     public boolean existsByCode(String code) {
         return locationRepository.existsById(code); // Hoặc sử dụng cách khác để kiểm tra mã địa điểm
     }
@@ -43,6 +49,7 @@ public class LocationService {
         return locationRepository.findUnTrashed(pageable);
     }
 
+    @Cacheable("locationCacheByPagination")
     public Page<Location> listByPage(int pageNum, int pageSize, String sortField, Map<String, Object> filterFields) {
         Sort sort = Sort.by(sortField).ascending();
 
@@ -51,6 +58,7 @@ public class LocationService {
         return locationRepository.listWithFilter(pageable, filterFields);
     }
 
+    @Cacheable(cacheNames = "locationCacheByCode", key = "#code")
     public Location get(String code) {
         return locationRepository.findByCode(code);
     }

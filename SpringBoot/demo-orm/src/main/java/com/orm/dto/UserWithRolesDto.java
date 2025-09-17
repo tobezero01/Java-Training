@@ -11,4 +11,5 @@ public class UserWithRolesDto {
     private String  lastName;
     private Boolean enabled;
     private List<RoleBriefDto> roles; // từ rolesCsv tách ra
+
 }

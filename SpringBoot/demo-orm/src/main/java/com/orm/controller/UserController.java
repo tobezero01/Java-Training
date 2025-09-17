@@ -4,7 +4,9 @@ import com.orm.dto.PageResponse;
 import com.orm.dto.UserRoleRow;
 import com.orm.dto.UserWithRolesDto;
 import com.orm.service.UserService;
+import com.orm.service.UserSpecService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -18,6 +20,8 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService service;
+
+    private final UserSpecService specService;
 
     // JPA + JOIN (Projection)
     // GET /v1/users/jpa-join?page=0&size=5&sort=email&dir=asc
@@ -97,6 +101,30 @@ public class UserController {
     }
 
     private static List<String> parseCsvParams(List<String> raw) {
+        if (raw == null || raw.isEmpty()) return List.of();
+        return raw.stream()
+                .flatMap(s -> Arrays.stream(s.split(",")))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .toList();
+    }
+
+    // /v1/users/search-spec?name=nguyen an&role=Admin,Editor&page=0&size=5&sort=email&dir=asc
+    // /v1/users/search-spec?role=Salesperson&role=Assistant
+    @GetMapping("/search-spec")
+    public Page<UserWithRolesDto> searchSpec(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false, name = "role") List<String> roleRaw,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "id") String sort,
+            @RequestParam(defaultValue = "asc") String dir
+    ) {
+        List<String> roleNames = parseCsv(roleRaw);
+        return specService.searchByNameAndRole(name, roleNames, page, size, sort, dir);
+    }
+
+    private static List<String> parseCsv(List<String> raw) {
         if (raw == null || raw.isEmpty()) return List.of();
         return raw.stream()
                 .flatMap(s -> Arrays.stream(s.split(",")))

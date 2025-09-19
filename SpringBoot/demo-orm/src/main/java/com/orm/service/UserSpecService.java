@@ -2,10 +2,8 @@ package com.orm.service;
 
 import com.orm.dto.RoleBriefDto;
 import com.orm.dto.UserWithRolesDto;
-import com.orm.entity.Role;
 import com.orm.entity.User;
 import com.orm.repository.UserRepository;
-import com.orm.repository.UserSpecs;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
@@ -13,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

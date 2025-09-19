@@ -89,8 +89,6 @@ WHERE dateOfBirth BETWEEN '1960-01-01' AND '1965-12-31';
   
 
 
-
-
 DROP TABLE IF EXISTS customer_p;
 
 CREATE TABLE customer_p (

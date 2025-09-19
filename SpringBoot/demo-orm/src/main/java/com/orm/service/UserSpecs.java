@@ -1,4 +1,4 @@
-package com.orm.repository;
+package com.orm.service;
 
 import com.orm.entity.User;
 import jakarta.persistence.criteria.JoinType;
@@ -13,7 +13,7 @@ import java.util.Objects;
 public final class UserSpecs {
     private UserSpecs() {}
 
-    /** Tìm theo tên: match trên firstName hoặc lastName; hỗ trợ nhiều token ("nguyen an"). */
+    /** Tìm theo tên: match trên firstName hoặc lastName */
     public static Specification<User> nameContains(String name) {
         return (root, query, cb) -> {
             if (name == null || name.isBlank()) return cb.conjunction();
@@ -29,7 +29,7 @@ public final class UserSpecs {
         };
     }
 
-    /** Lọc theo danh sách role name (không phân biệt hoa/thường). */
+    /** Lọc theo danh sách role name */
     public static Specification<User> hasRoleNames(Collection<String> roleNames) {
         return (root, query, cb) -> {
             if (roleNames == null || roleNames.isEmpty()) return cb.conjunction();

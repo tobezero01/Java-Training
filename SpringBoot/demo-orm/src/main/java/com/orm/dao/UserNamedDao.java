@@ -39,9 +39,9 @@ public class UserNamedDao {
         limit :limit offset :offset
         """.formatted(order);
 
-        Map<String, Object> p = Map.of("limit", size, "offset", offset);
+        Map<String, Object> map = Map.of("limit", size, "offset", offset);
 
-        return named.query(sql, p, (rs, rowNum) ->
+        return named.query(sql, map, (rs, rowNum) ->
                 new UserRoleRow(
                         rs.getInt("user_id"),
                         rs.getString("email"),

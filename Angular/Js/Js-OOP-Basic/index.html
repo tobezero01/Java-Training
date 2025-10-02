@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bookshelf OOP (JS)</title>
+    <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Bookshelf</h1>
+
+        </header>
+
+        <section class="card">
+            <h2>Thêm sách</h2>
+            <form id="bookForm" autocomplete="off">
+                <div class="grid">
+                    <label>Tiêu đề
+                        <input id="title" required placeholder="Title" />
+                    </label>
+                    <label>Tác giả
+                        <input id="author" required placeholder="Author" />
+                    </label>
+                    <label>Năm
+                        <input id="year" type="number" min="0" max="9999" placeholder="xxxx" />
+                    </label>
+                    <label class="row">
+                        <input id="isRead" type="checkbox" /> Đã đọc
+                    </label>
+                </div>
+                <div class="row end">
+                    <span id="error" role="alert" class="error" hidden></span>
+                    <button class="btn" type="submit">+ Thêm</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="card">
+            <div class="toolbar">
+                <input id="q" placeholder="Tìm theo tiêu đề/tác giả..." />
+                <div class="stats">
+                    Tổng: <b id="countTotal">0</b> · Đã đọc: <b id="countRead">0</b> · Chưa đọc: <b
+                        id="countUnread">0</b>
+                </div>
+                <button id="clearAll" class="btn danger" type="button">Xoá tất cả</button>
+            </div>
+
+            <ul id="list" class="list"></ul>
+        </section>
+
+        <footer class="muted">
+            <p>Copyright <a class="profile" href="https://www.facebook.com/tobezero01" target="_blank">@ducnhuad</a> LTD
+            </p>
+        </footer>
+    </div>
+    <script type="module" src="./main.js"></script>
+</body>
+
+</html>

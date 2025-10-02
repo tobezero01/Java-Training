@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Todo App</title>
+    <link rel="stylesheet" href="./style.css" />
+</head>
+
+<body>
+    <div class="card">
+        <h1 class="title">Todo App</h1>
+
+        <!-- Form: dùng cùng 1 input để Add và Search -->
+        <form id="todoForm" class="add-row" autocomplete="off">
+            <input id="todoInput" type="text" placeholder="Add new todo / Search by name" />
+            <button id="addBtn" class="btn-plus" type="submit" title="Add">+</button>
+            <button id="searchBtn" class="btn-secondary" type="submit" title="Search">Search</button>
+        </form>
+
+        <span id="errorMessage" class="error" style="display:none"></span>
+
+        <ul id="todoList" class="list"></ul>
+        <div id="noResults" class="muted" style="display:none">No matching tasks.</div>
+
+        <div class="footer">
+            <div class="pending">
+                You have <b id="pendingCount">0</b> pending tasks
+            </div>
+            <button id="clearAll" class="btn-clear" type="button">Clear All</button>
+        </div>
+    </div>
+
+    <script src="./script.js" defer></script>
+</body>
+
+</html>

@@ -1,0 +1,555 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>JS Event Demo — One File</title>
+    <style>
+        :root {
+            --fg: #111;
+            --bg: #fff;
+            --muted: #6b7280;
+            --brand: #2563eb;
+            --ok: #16a34a;
+            --warn: #ca8a04;
+            --err: #b91c1c;
+        }
+
+        * {
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.45;
+            margin: 0;
+            color: var(--fg);
+            background: var(--bg)
+        }
+
+        header {
+            padding: 20px 16px;
+            border-bottom: 1px solid #eee
+        }
+
+        h1 {
+            margin: 0 0 6px 0;
+            font-size: 22px
+        }
+
+        header p {
+            margin: 0;
+            color: var(--muted)
+        }
+
+        main {
+            padding: 16px;
+            display: grid;
+            gap: 16px;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr))
+        }
+
+        section {
+            border: 1px solid #eee;
+            border-radius: 14px;
+            padding: 12px 12px 16px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, .05)
+        }
+
+        section h2 {
+            margin: 2px 0 8px;
+            font-size: 18px
+        }
+
+        .row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center
+        }
+
+        button {
+            border: 1px solid #e5e7eb;
+            background: #f9fafb;
+            padding: 8px 12px;
+            border-radius: 10px;
+            cursor: pointer
+        }
+
+        button:hover {
+            background: #eef2ff;
+            border-color: #c7d2fe
+        }
+
+        input,
+        select,
+        textarea {
+            padding: 8px 10px;
+            border-radius: 10px;
+            border: 1px solid #e5e7eb;
+            outline: none
+        }
+
+        input:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--brand);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, .15)
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid #e5e7eb;
+            border-radius: 999px;
+            padding: 6px 10px;
+            background: #fff
+        }
+
+        .box {
+            border-radius: 12px;
+            border: 1px dashed #d1d5db;
+            padding: 16px
+        }
+
+        .stack {
+            display: flex;
+            gap: 8px
+        }
+
+        .stack .cell {
+            flex: 1;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            padding: 10px;
+            text-align: center;
+            background: #f8fafc
+        }
+
+        .hover-card {
+            padding: 18px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            background: #fafafa;
+            transition: .2s
+        }
+
+        .hover-card.hover {
+            background: #f0f9ff;
+            border-color: #bae6fd
+        }
+
+        .droppable {
+            min-height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            border: 2px dashed #cbd5e1;
+            background: #f8fafc
+        }
+
+        .draggable {
+            display: inline-block;
+            padding: 8px 12px;
+            border-radius: 10px;
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            cursor: grab
+        }
+
+        #log {
+            height: 220px;
+            overflow: auto;
+            background: #0b1020;
+            color: #e2e8f0;
+            border-radius: 12px;
+            padding: 10px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 13px;
+            white-space: pre-wrap
+        }
+
+        .muted {
+            color: var(--muted)
+        }
+
+        .kpi {
+            font-weight: 600
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px
+        }
+
+        .tall {
+            height: 600px
+        }
+
+        .nested {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 6px
+        }
+
+        .nested .layer {
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb
+        }
+
+        .layer.a {
+            background: #fff7ed
+        }
+
+        .layer.b {
+            background: #eff6ff
+        }
+
+        .layer.c {
+            background: #f0fdf4
+        }
+
+        .context-menu {
+            position: absolute;
+            inset: auto auto 0 0;
+            transform: translate(var(--x, 0), var(--y, 0));
+            padding: 8px;
+            border-radius: 10px;
+            background: #111;
+            color: #fff;
+            display: none
+        }
+
+        .context-menu.show {
+            display: block
+        }
+
+        footer {
+            padding: 12px 16px;
+            color: var(--muted);
+            border-top: 1px solid #eee
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Demo sự kiện trong JavaScript (một file)</h1>
+        <p>Minh hoạ <code>onclick</code>, <code>onfocus</code>, <code>onchange</code>, <code>oninput</code>,
+            <code>submit</code>, key/mouse, drag & drop, bubbling/capturing, delegation...
+        </p>
+    </header>
+
+    <main>
+        <!-- Click / Dblclick / Bubbling vs Capturing -->
+        <section>
+            <h2>1) Click / Double click / Bubbling & Capturing</h2>
+            <details class="muted">
+                <summary><strong>Hướng dẫn kiểm thử</strong></summary>
+                <ol>
+                    <li>Bấm nút <em>Inline onclick</em> ⇒ xem log: “inline onclick”.</li>
+                    <li>Bấm nút <em>JS addEventListener</em> ⇒ xem log: “addEventListener click…”.</li>
+                    <li><em>Double‑click</em> nút “Double‑click tôi” ⇒ xem log: “dblclick…”.</li>
+                    <li>Click vào ô <strong>Layer C</strong> ⇒ theo dõi thứ tự log: <code>capture @A</code> →
+                        <code>target @C</code> → <code>bubble @B</code>. (Minh hoạ <em>capturing → target →
+                            bubbling</em>.)
+                    </li>
+                </ol>
+            </details>
+            <div class="row">
+                <button id="btnInline" onclick="log('inline onclick: Bạn vừa click nút inline', event)">Inline
+                    onclick</button>
+                <button id="btnJs">JS addEventListener</button>
+                <button id="btnDbl">Double‑click tôi</button>
+            </div>
+            <div class="nested" style="margin-top:10px">
+                <div class="layer a" id="layerA">Layer A (capture)
+                    <div class="layer b" id="layerB">Layer B (bubble)
+                        <div class="layer c" id="layerC">Layer C (target)</div>
+                    </div>
+                </div>
+            </div>
+            <p class="muted">Click vào C để xem thứ tự: A(capture) → C(target) → B(bubble).</p>
+        </section>
+
+        <!-- Focus / Blur / Focusin -->
+        <section>
+            <h2>2) Focus / Blur / Focusin</h2>
+            <details class="muted">
+                <summary><strong>Hướng dẫn kiểm thử</strong></summary>
+                <ol>
+                    <li>Click vào ô <em>Tên</em> ⇒ log “focus…”.</li>
+                    <li>Click ra ngoài hoặc chuyển tab (Tab/Shift+Tab) ⇒ log “blur…”.</li>
+                    <li>Đặt focus vào ô <em>Email</em> ⇒ thấy <code>focusin</code> (có bubble) xuất hiện trong log.</li>
+                    <li>Lưu ý: <code>focus</code>/<code>blur</code> không bubble;
+                        <code>focusin</code>/<code>focusout</code> có bubble.
+                    </li>
+                </ol>
+            </details>
+            <div class="grid-2">
+                <label class="pill">Tên: <input id="inpName" placeholder="Nhập tên"
+                        onfocus="log('inline onfocus: input Name', event)"
+                        onblur="log('inline onblur: input Name', event)" /></label>
+                <label class="pill">Email: <input id="inpEmail" placeholder="email@vd.com" /></label>
+            </div>
+            <p class="muted">Gợi ý: <code>focus</code>/<code>blur</code> không bubble, nhưng
+                <code>focusin</code>/<code>focusout</code> có bubble.
+            </p>
+        </section>
+
+        <!-- Input / Change -->
+        <section>
+            <h2>3) Input / Change</h2>
+            <details class="muted">
+                <summary><strong>Hướng dẫn kiểm thử</strong></summary>
+                <ol>
+                    <li>Kéo thanh <em>Range</em> nhanh ⇒ log <code>oninput</code> cập nhật liên tục.</li>
+                    <li>Thả chuột (kết thúc kéo) ⇒ log <code>onchange</code> “commit”.</li>
+                    <li>Chọn mục trong <em>Select</em> ⇒ log <code>onchange</code> với giá trị đã chọn.</li>
+                    <li>Tích/bỏ tích <em>Checkbox</em> ⇒ log <code>onchange: checkbox=true/false</code>.</li>
+                    <li>Gõ vào ô “Gõ nhanh (input)” ⇒ nội dung hiện tức thời ở nhãn bên cạnh, đồng thời có log
+                        <code>oninput</code>.
+                    </li>
+                </ol>
+            </details>
+            <div class="row">
+                <label class="pill">Range: <input type="range" id="rng" min="0" max="100" value="50"
+                        oninput="log('inline oninput: range=' + this.value, event)"
+                        onchange="log('inline onchange: range commit ' + this.value, event)" /></label>
+                <label class="pill">Select:
+                    <select id="sel" onchange="log('inline onchange: select → ' + this.value, event)">
+                        <option value="">--Chọn--</option>
+                        <option>Apple</option>
+                        <option>Banana</option>
+                        <option>Cherry</option>
+                    </select>
+                </label>
+                <label class="pill"><input type="checkbox" id="chk"
+                        onchange="log('inline onchange: checkbox=' + this.checked, event)" /> Đồng ý</label>
+            </div>
+            <div class="row" style="margin-top:8px">
+                <label class="pill">Gõ nhanh (input): <input id="fast" placeholder="oninput hiển thị ngay" /></label>
+                <span id="fastMirror" class="muted"></span>
+            </div>
+        </section>
+
+        <!-- Keydown / Keyup -->
+        <section>
+            <h2>4) Bàn phím: keydown / keyup</h2>
+            <details class="muted">
+                <summary><strong>Hướng dẫn kiểm thử</strong></summary>
+                <ol>
+                    <li>Đặt con trỏ vào ô “Gõ phím ở đây”.</li>
+                    <li>Nhấn các phím chữ/số ⇒ xem nhãn cập nhật <code>↓/↑ key (code)</code> và log
+                        <code>keydown</code>/<code>keyup</code>.
+                    </li>
+                    <li>Thử phím đặc biệt (Enter, Escape, ArrowLeft…) và với modifier (Ctrl/Shift/Alt).</li>
+                </ol>
+            </details>
+            <div class="row">
+                <input id="keybox" placeholder="Gõ phím ở đây" />
+                <span class="muted" id="keyinfo">(chờ phím...)</span>
+            </div>
+        </section>
+
+        <!-- Mouseover / Mouseout / Contextmenu -->
+        <section>
+            <h2>5) Mouseover / Mouseout / Contextmenu</h2>
+            <details class="muted">
+                <summary><strong>Hướng dẫn kiểm thử</strong></summary>
+                <ol>
+                    <li>Di chuột vào thẻ <em>hover-card</em> ⇒ log <code>onmouseover</code> và thẻ đổi màu.</li>
+                    <li>Rời chuột khỏi thẻ ⇒ log <code>onmouseout</code> và thẻ trở lại bình thường.</li>
+                    <li>Chuột phải trên thẻ ⇒ menu ngữ cảnh tuỳ biến xuất hiện, và có log <code>contextmenu</code>.
+                        Click nơi khác để ẩn.</li>
+                </ol>
+            </details>
+            <div class="hover-card" id="hoverCard"
+                onmouseover="this.classList.add('hover'); log('inline onmouseover: hover-card', event)"
+                onmouseout="this.classList.remove('hover'); log('inline onmouseout: hover-card', event)"
+                oncontextmenu="return customContext(event)">
+                Di chuột qua đây, hoặc bấm chuột phải.
+                <div class="context-menu" id="ctx">Menu chuột phải (demo)</div>
+            </div>
+        </section>
+
+        <!-- Drag & Drop -->
+        <section>
+            <h2>6) Drag & Drop (HTML5)</h2>
+            <details class="muted">
+                <summary><strong>Hướng dẫn kiểm thử</strong></summary>
+                <ol>
+                    <li>Kéo ô “Kéo tôi” vào vùng “Thả vào đây”.</li>
+                    <li>Trong khi kéo qua vùng thả, nền vùng thả đổi màu (đang <code>dragover</code>).</li>
+                    <li>Thả chuột ⇒ log <code>drop</code> kèm dữ liệu <code>drag-demo</code>.</li>
+                </ol>
+            </details>
+            <div class="row">
+                <div class="draggable" id="dragItem" draggable="true">Kéo tôi</div>
+                <div class="droppable" id="dropZone">Thả vào đây</div>
+            </div>
+            <p class="muted">Sử dụng <code>dragstart</code>, <code>dragover</code>, <code>drop</code>.</p>
+        </section>
+
+        <!-- Form submit -->
+        <section>
+            <h2>7) Submit form</h2>
+            <details class="muted">
+                <summary><strong>Hướng dẫn kiểm thử</strong></summary>
+                <ol>
+                    <li>Nhập <em>username</em> và <em>age</em>.</li>
+                    <li>Bấm “Gửi” ⇒ form không reload trang (đã <code>preventDefault</code>), log hiển thị JSON dữ liệu.
+                    </li>
+                    <li>Thử xoá <em>username</em> rồi gửi ⇒ trình duyệt báo thiếu field (vì <code>required</code>).</li>
+                </ol>
+            </details>
+            <form id="demoForm">
+                <div class="row">
+                    <input name="username" placeholder="username" required />
+                    <input name="age" type="number" placeholder="age" min="1" />
+                    <button type="submit">Gửi</button>
+                </div>
+            </form>
+            <p class="muted">Ngăn submit thật bằng <code>event.preventDefault()</code> để demo.</p>
+        </section>
+
+        <!-- Scroll / Resize -->
+        <section>
+            <h2>8) Scroll / Resize</h2>
+            <details class="muted">
+                <summary><strong>Hướng dẫn kiểm thử</strong></summary>
+                <ol>
+                    <li>Kéo trang xuống ⇒ số <strong>Scroll Y</strong> tăng theo vị trí cuộn.</li>
+                    <li>Nắm cạnh cửa sổ và thay đổi kích thước ⇒ <strong>Kích thước</strong> cập nhật theo
+                        <code>innerWidth × innerHeight</code>.
+                    </li>
+                </ol>
+            </details>
+            <div class="row">
+                <div class="cell">Scroll Y: <span class="kpi" id="scrollY">0</span></div>
+                <div class="cell">Kích thước: <span class="kpi" id="wh">?</span></div>
+            </div>
+            <div class="tall box" style="margin-top:8px">Kéo trang xuống để phát sinh sự kiện <code>scroll</code>.</div>
+        </section>
+
+        <!-- Delegation (sự kiện uỷ quyền) -->
+        <section>
+            <h2>9) Event Delegation</h2>
+            <details class="muted">
+                <summary><strong>Hướng dẫn kiểm thử</strong></summary>
+                <ol>
+                    <li>Click vào từng mục trong danh sách ⇒ log hiển thị <code>data-id</code> của mục được click.</li>
+                    <li>Bấm nút “Thêm mục” để thêm mục mới động, rồi click mục mới ⇒ vẫn nhận sự kiện (chứng minh
+                        delegation).</li>
+                </ol>
+            </details>
+            <button id="addItem" style="margin:6px 0">Thêm mục</button>
+            <ul id="list" class="box">
+                <li data-id="1">Mục 1</li>
+                <li data-id="2">Mục 2</li>
+                <li data-id="3">Mục 3</li>
+            </ul>
+            <p class="muted">Chỉ gắn 1 listener lên <code>#list</code>, click vào từng <code>&lt;li&gt;</code> sẽ được
+                xử lý nhờ <code>event.target</code>.</p>
+        </section>
+
+        <!-- Console log -->
+        <section>
+            <h2>Console (log sự kiện)</h2>
+            <div class="row" style="margin-bottom:8px">
+                <button onclick="clearLog()">Xoá log</button>
+                <label class="pill"><input type="checkbox" id="detailToggle" checked /> Hiện chi tiết event</label>
+            </div>
+            <pre id="log" aria-live="polite"></pre>
+        </section>
+    </main>
+
+    <footer>
+        Mẹo: Tránh dùng inline handler trong sản phẩm thật; ưu tiên <code>addEventListener</code>. Dùng
+        <code>type="module"</code> để scope sạch và dễ tách file.
+    </footer>
+
+    <script src="./onEvent.js">
+
+    </script>
+    <script>
+        // ==== Utils ====
+        function customContext(e) {
+            e.preventDefault();
+            const card = document.getElementById('hoverCard');
+            ctx.style.setProperty('--x', (e.offsetX + 8) + 'px');
+            ctx.style.setProperty('--y', (e.offsetY + 8) + 'px');
+            ctx.classList.add('show');
+            log('contextmenu: mở menu custom', e);
+            // ẩn menu khi click nơi khác
+            window.addEventListener('click', () => ctx.classList.remove('show'), { once: true });
+            return false; // chặn menu mặc định
+        }
+        window.customContext = customContext; // dùng cho inline handler
+
+
+        // ==== 6) Drag & Drop ====
+        const dragItem = document.getElementById('dragItem');
+        const dropZone = document.getElementById('dropZone');
+        dragItem.addEventListener('dragstart', (e) => { e.dataTransfer.setData('text/plain', 'drag-demo'); log('dragstart', e); });
+        dropZone.addEventListener('dragover', (e) => { e.preventDefault(); dropZone.style.background = '#ecfeff'; });
+        dropZone.addEventListener('dragleave', () => { dropZone.style.background = ''; });
+        dropZone.addEventListener('drop', (e) => { e.preventDefault(); dropZone.style.background = ''; log('drop: nhận dữ liệu = ' + e.dataTransfer.getData('text/plain'), e); });
+
+
+        // ==== 7) Submit form ====
+        document.getElementById('demoForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const fd = new FormData(e.target);
+            const obj = Object.fromEntries(fd.entries());
+            log('submit: dữ liệu form → ' + JSON.stringify(obj));
+        });
+
+
+        // ==== 8) Scroll / Resize ====
+        const scrollYEl = document.getElementById('scrollY');
+        const whEl = document.getElementById('wh');
+        function updateWH() { whEl.textContent = `${window.innerWidth}×${window.innerHeight}`; }
+        updateWH();
+        let ticking = false;
+        window.addEventListener('scroll', () => {
+            if (!ticking) {
+                window.requestAnimationFrame(() => {
+                    scrollYEl.textContent = Math.round(window.scrollY);
+                    ticking = false;
+                });
+                ticking = true;
+            }
+        }, { passive: true });
+        window.addEventListener('resize', updateWH);
+
+
+        // ==== 9) Delegation ====
+        document.getElementById('list').addEventListener('click', (e) => {
+            const li = e.target.closest('li');
+            if (!li) return;
+            log('delegation: click mục #' + li.dataset.id, e);
+        });
+        // Cho phép thêm mục động để kiểm thử delegation
+        (function () {
+            const btn = document.getElementById('addItem');
+            if (!btn) return;
+            let nextId = 4;
+            btn.addEventListener('click', () => {
+                const ul = document.getElementById('list');
+                const li = document.createElement('li');
+                li.dataset.id = String(nextId++);
+                li.textContent = 'Mục ' + li.dataset.id;
+                ul.appendChild(li);
+                log('delegation: đã thêm mục #' + li.dataset.id);
+            });
+        })();
+    </script>
+</body>
+
+</html>

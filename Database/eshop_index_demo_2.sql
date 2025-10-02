@@ -70,7 +70,6 @@ WHERE last_name = 'Trần'
 -- Kỳ vọng dùng idx_customer_lastname_dob
 
 
-
 -- 3.2. dateOfBirth → last_name
 CREATE INDEX idx_customer_dob_lastname
   ON customer (dateOfBirth, last_name);

@@ -42,9 +42,9 @@ body {
 
 /* 3 cột: input | + | Search */
 .add-row {
-    display: grid;
-    grid-template-columns: 1fr 44px auto;
-    gap: 8px
+    display: inline-flex;
+    flex-wrap: wrap;
+    gap: 8px;
 }
 
 .add-row input {
@@ -147,7 +147,7 @@ body {
 }
 
 .todo:hover .delete {
-    opacity: 1
+    opacity: 1;
 }
 
 .footer {
@@ -197,7 +197,6 @@ body {
     background: #94a3b8
 }
 
-/* Cho người dùng biết có thể kéo */
 .todo {
     cursor: grab;
 }

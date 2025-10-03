@@ -36,7 +36,6 @@ function handleAdd() {
     addTodo(text);
     input.value = '';
     input.focus();
-    // bỏ class is-hisden để hiện toàn bộ danh sách
     Array.from(list.children).forEach(li => li.classList.remove('is-hidden'));
     setNoResults(false);
     updateCount();

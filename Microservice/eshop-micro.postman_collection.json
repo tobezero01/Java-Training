@@ -1,0 +1,443 @@
+{
+  "info": {
+    "name": "EShop Microservices — Servers & Auth API",
+    "_postman_id": "3f9d9a7a-eshop-micro-1759608083",
+    "description": "Collection to verify servers (Eureka, Config Server, Gateway, Auth-Service) and exercise Auth APIs via Gateway. Includes placeholders for other service routes.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseEureka",
+      "value": "http://localhost:8761"
+    },
+    {
+      "key": "baseConfig",
+      "value": "http://localhost:8888"
+    },
+    {
+      "key": "baseGateway",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "baseAuth",
+      "value": "http://localhost:9001"
+    },
+    {
+      "key": "email",
+      "value": "buyer@example.com"
+    },
+    {
+      "key": "password",
+      "value": "Password@123"
+    },
+    {
+      "key": "firstName",
+      "value": "Buyer"
+    },
+    {
+      "key": "lastName",
+      "value": "One"
+    },
+    {
+      "key": "countryCode",
+      "value": "VN"
+    },
+    {
+      "key": "addressLine1",
+      "value": "123 Test St"
+    },
+    {
+      "key": "addressLine2",
+      "value": ""
+    },
+    {
+      "key": "city",
+      "value": "Hanoi"
+    },
+    {
+      "key": "state",
+      "value": "HN"
+    },
+    {
+      "key": "postalCode",
+      "value": "100000"
+    },
+    {
+      "key": "phone",
+      "value": "0900000000"
+    },
+    {
+      "key": "accessToken",
+      "value": ""
+    },
+    {
+      "key": "verificationCode",
+      "value": ""
+    },
+    {
+      "key": "resetToken",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "SERVERS — Health & Info",
+      "item": [
+        {
+          "name": "Eureka — UI (/)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseEureka}}/"
+          },
+          "response": []
+        },
+        {
+          "name": "Eureka — /actuator/health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseEureka}}/actuator/health"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () { pm.response.to.have.status(200); });",
+                  "pm.test('Contains UP', function () { pm.expect(pm.response.text()).to.include('UP'); });"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Config Server — /actuator/health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseConfig}}/actuator/health"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('200 & UP',()=>{pm.response.to.have.status(200); pm.expect(pm.response.text()).to.include('UP');});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Config Server — auth-service config (default profile)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseConfig}}/auth-service/default"
+          },
+          "response": []
+        },
+        {
+          "name": "Gateway — /actuator/health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseGateway}}/actuator/health"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Gateway UP',()=>{pm.response.to.have.status(200); pm.expect(pm.response.text()).to.include('UP');});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Auth-Service (direct) — /actuator/health",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseAuth}}/actuator/health"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Auth-Service UP',()=>{pm.response.to.have.status(200); pm.expect(pm.response.text()).to.include('UP');});"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "AUTH via Gateway — End-to-End",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseGateway}}/api/auth/register",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstName\": \"{{firstName}}\", \"lastName\": \"{{lastName}}\", \"email\": \"{{email}}\", \"password\": \"{{password}}\", \"countryCode\": \"{{countryCode}}\", \"addressLine1\": \"{{addressLine1}}\", \"addressLine2\": \"{{addressLine2}}\", \"city\": \"{{city}}\", \"state\": \"{{state}}\", \"postalCode\": \"{{postalCode}}\", \"phone\": \"{{phone}}\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Registered (200)',()=>pm.response.to.have.status(200));",
+                  "// If verification code is printed in dev logs, set it manually to {{verificationCode}} when testing verify."
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Verify (dev: paste code to {{verificationCode}})",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": "{{baseGateway}}/api/auth/verify?code={{verificationCode}}"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Verify OK',()=>pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseGateway}}/api/auth/login",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"{{email}}\", \"password\": \"{{password}}\", \"rememberMe\": true}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Login 200',()=>pm.response.to.have.status(200));",
+                  "var data = pm.response.json();",
+                  "if(data && data.accessToken){ pm.collectionVariables.set('accessToken', data.accessToken); }",
+                  "pm.test('accessToken saved',()=> pm.collectionVariables.get('accessToken'));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Me (Bearer {{accessToken}})",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{accessToken}}"
+              }
+            ],
+            "url": "{{baseGateway}}/api/auth/me"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Me 200',()=>pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh (uses HttpOnly cookie)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseGateway}}/api/auth/refresh"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Refresh 200',()=>pm.response.to.have.status(200));",
+                  "var data = pm.response.json();",
+                  "if(data && data.accessToken){ pm.collectionVariables.set('accessToken', data.accessToken); }"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout (revoke + clear cookie)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": "{{baseGateway}}/api/auth/logout"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Logout 204',()=>pm.response.to.have.status(204));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseGateway}}/api/auth/forgot-password",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"email\": \"{{email}}\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Forgot 200',()=>pm.response.to.have.status(200));",
+                  "// Set {{resetToken}} from email/log for Reset Password step."
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        },
+        {
+          "name": "Reset Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseGateway}}/api/auth/reset-password",
+            "body": {
+              "mode": "raw",
+              "raw": "{\"token\": \"{{resetToken}}\", \"newPassword\": \"NewPassword@123\"}"
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Reset OK',()=>pm.response.to.have.status(200));"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Placeholders — Other Services via Gateway",
+      "item": [
+        {
+          "name": "Catalog: GET /api/products (placeholder)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseGateway}}/api/products"
+          }
+        },
+        {
+          "name": "Catalog: GET /api/categories (placeholder)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseGateway}}/api/categories"
+          }
+        },
+        {
+          "name": "Cart: GET /api/cart (placeholder)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseGateway}}/api/cart"
+          }
+        },
+        {
+          "name": "Checkout: GET /api/checkout/summary (placeholder)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseGateway}}/api/checkout/summary"
+          }
+        },
+        {
+          "name": "Orders: GET /api/orders (placeholder)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseGateway}}/api/orders"
+          }
+        },
+        {
+          "name": "Reviews: GET /api/reviews (placeholder)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseGateway}}/api/reviews"
+          }
+        },
+        {
+          "name": "Geo: GET /api/geo/countries (placeholder)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseGateway}}/api/geo/countries"
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+server:
+  port: 9002
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/eshopdb?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Bangkok
+    username: root
+    password: ducnhu1234
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+  redis:
+    host: ${SPRING_REDIS_HOST:localhost}
+    port: ${SPRING_REDIS_PORT:6379}
+    password: ${SPRING_REDIS_PASSWORD:ducnhu1234}
+    database: ${SPRING_REDIS_DATABASE:0}
+    timeout: ${SPRING_REDIS_TIMEOUT:60s}
+    ssl: ${SPRING_REDIS_SSL:false}
+
+jobs:
+  categoryHierarchy:
+    cron: "0 15 3 * * *" # 3h15 hang ngay
+  pageWarmup:
+    cron: "0 0/10 * * * *" # moi 10p
+  aliasIndex:
+    cron: "0 45 * * * *" # moi phut thu 45
+  ratingBackfill:
+    cron: "0 5 * * * *" # moi phut thu 5

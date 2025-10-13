@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: ${APP_NAME:EShopForCustomer}
+
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/eshopdb?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Bangkok}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:ducnhu1234}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  redis:
+    host: ${SPRING_REDIS_HOST:localhost}
+    port: ${SPRING_REDIS_PORT:6378}
+    password: ${SPRING_REDIS_PASSWORD:ducnhu1234}
+    database: ${SPRING_REDIS_DATABASE:0}
+    timeout: ${SPRING_REDIS_TIMEOUT:60s}
+    ssl: ${SPRING_REDIS_SSL:false}
+
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:none}
+    show-sql: ${JPA_SHOW_SQL:false}
+    properties:
+      hibernate:
+        format_sql: ${HIBERNATE_FORMAT_SQL:true}
+        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.MySQLDialect}
+
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: ${SERVER_SERVLET_CONTEXT_PATH:/EShop}
+
+logging:
+  pattern:
+    console: ${LOGPATTERN_CONSOLE:%green(%d{HH:mm:ss.SSS}) %blue(%-5level) %red([%thread]) %yellow(%logger{15}) - %msg%n}
+  level:
+    root: ${LOG_LEVEL_ROOT:warn}
+    com:
+      eshop: ${LOG_LEVEL_COM_ESHOP:info}
+    org:
+      hibernate:
+        SQL: ${LOG_LEVEL_ORG_HIBERNATE_SQL:warn}
+        tool:
+          schema: ${LOG_LEVEL_ORG_HIBERNATE_TOOL_SCHEMA:warn}
+        orm:
+          jdbc:
+            bind: ${LOG_LEVEL_ORG_HIBERNATE_ORM_JDBC_BIND:off}
+
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200}

@@ -14,6 +14,8 @@ import java.util.List;
 
 public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecificationExecutor<User> {
 
+
+
     // Gốc: không lọc
     @Query("""
     select u.id as userId,
@@ -59,5 +61,14 @@ public interface UserRepository extends JpaRepository<User, Integer>, JpaSpecifi
     @Override
     @EntityGraph(attributePaths = "roles")
     Page<User> findAll(Specification<User> spec, Pageable pageable);
+
+    @Query("""
+    select u from User u
+    where lower(u.firstName) like lower(concat('%', :kw, '%'))
+       or lower(u.lastName)  like lower(concat('%', :kw, '%'))
+       or lower(concat(u.firstName, ' ', u.lastName)) like lower(concat('%', :kw, '%'))
+       or lower(u.email) like lower(concat('%', :kw, '%'))
+  """)
+    Page<User> searchByName(@Param("kw") String keyword, Pageable pageable);
 
 }

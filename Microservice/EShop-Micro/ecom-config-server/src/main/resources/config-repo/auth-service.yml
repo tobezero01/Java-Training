@@ -1,0 +1,57 @@
+server:
+  port: 9001
+
+spring:
+  datasource:
+    url: jdbc:mysql://localhost:3306/eshopdb?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Bangkok
+    username: root
+    password: ducnhu1234
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+  security:
+    jwt:
+      issuer: "eshop-auth"
+      secret: "a2VlcC10aGlzLWtleS1wcml2YXRlLWFuZC1hbmQtb25seS1kZXZlbG9wZXItaGF2ZS1wZXJtaXNzaW9uLXRvLWNoYW5nZS1pdC1ub3RpZnktYnktRHVjbmh1YWQ="
+      access-ttl-seconds: 36000
+    auth:
+      refresh-ttl-days-remember: 30
+      refresh-ttl-days-session: 1
+      cookie:
+        secure: false
+        domain:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: 674516247445-plmsh9vd8uq9s0ss66cpgh1jd02fus79.apps.googleusercontent.com
+            client-secret: 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
+            scope:
+              - email
+              - profile
+              - openid
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ducnhuadclone1@gmail.com
+    password: gywe lppj dqpu rrzb
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: false
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,env,info
+logging:
+  level:
+    org.springframework.security: INFO
+  pattern:
+    console: ${LOGPATTERN_CONSOLE:%green(%d{HH:mm:ss.SSS}) %blue(%-5level) %red([%thread]) %yellow(%logger{15}) - %msg%n}

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile default="true" name="Default" enabled="true" />
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="auth-service" />
+        <module name="ecom-gateway" />
+        <module name="common-service" />
+        <module name="ecom-eureka-server (1)" />
+        <module name="customer-service" />
+        <module name="ecom-eureka-server" />
+        <module name="catalog-service" />
+        <module name="geo-service" />
+      </profile>
+    </annotationProcessing>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="auth-service" options="" />
+      <module name="catalog-service" options="" />
+      <module name="common-service" options="" />
+      <module name="customer-service" options="" />
+      <module name="ecom-eureka-server" options="" />
+      <module name="ecom-eureka-server (1)" options="" />
+      <module name="ecom-gateway" options="" />
+      <module name="geo-service" options="" />
+    </option>
+  </component>
+</project>

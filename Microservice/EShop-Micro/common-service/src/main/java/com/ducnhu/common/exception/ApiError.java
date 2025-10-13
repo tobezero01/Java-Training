@@ -1,0 +1,7 @@
+package com.ducnhu.common.exception;
+
+import java.util.Map;
+
+public record ApiError(
+        String timestamp, int status, String error, String code, String message, String path, Map<String, ?> details
+) {}

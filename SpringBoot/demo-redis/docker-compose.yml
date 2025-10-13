@@ -1,0 +1,39 @@
+# docker-compose.yml (đã chỉnh)
+services:
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - "6378:6379"                             # host:container
+    command: ["redis-server", "--appendonly", "yes", "--requirepass", "ducnhu1234"]
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "ducnhu1234", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  app:
+    build: .
+    depends_on:
+      redis:
+        condition: service_healthy
+    environment:
+      # Mapping vào application.yml
+      APP_NAME: ProductPage
+
+      # 👉 Dùng MySQL có sẵn trên máy
+      DB_URL: "jdbc:mysql://host.docker.internal:3306/eshopdb?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC"
+      DB_USERNAME: "root"
+      DB_PASSWORD: "ducnhu1234"
+
+      # 👉 Kết nối theo tên service 'redis' & cổng trong container (6379)
+      SPRING_REDIS_HOST: "redis"
+      SPRING_REDIS_PORT: 6379
+      SPRING_REDIS_PASSWORD: "ducnhu1234"
+      SPRING_REDIS_DATABASE: 0
+      SPRING_REDIS_TIMEOUT: 60s
+      SPRING_REDIS_SSL: "false"
+
+    ports:
+      - "8080:8080"
+    restart: unless-stopped

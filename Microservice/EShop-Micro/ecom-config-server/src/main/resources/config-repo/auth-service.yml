@@ -22,16 +22,7 @@ spring:
       cookie:
         secure: false
         domain:
-  #    oauth2:
-  #      client:
-  #        registration:
-  #          google:
-  #            client-id: ${GOOGLE_CLIENT_ID:674516247445-plmsh9vd8uq9s0ss66cpgh1jd02fus79.apps.googleusercontent.com}
-  #            client-secret: ${GOOGLE_CLIENT_SECRET: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}
-  #            scope:
-  #              - email
-  #              - profile
-  #              - openid
+
 
   mail:
     host: smtp.gmail.com

@@ -7,27 +7,41 @@
         <sourceOutputDir name="target/generated-sources/annotations" />
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
-        <module name="auth-service" />
         <module name="ecom-gateway" />
+        <module name="cart-service" />
         <module name="common-service" />
+        <module name="checkout-service" />
         <module name="ecom-eureka-server (1)" />
         <module name="customer-service" />
+        <module name="review-service" />
         <module name="ecom-eureka-server" />
         <module name="catalog-service" />
+        <module name="settings-service" />
+        <module name="auth-service" />
+        <module name="payment-service" />
         <module name="geo-service" />
+        <module name="order-service" />
+        <module name="shipping-service" />
       </profile>
     </annotationProcessing>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
       <module name="auth-service" options="" />
+      <module name="cart-service" options="" />
       <module name="catalog-service" options="" />
+      <module name="checkout-service" options="--add-exports java.base/jdk.internal.icu.impl=ALL-UNNAMED" />
       <module name="common-service" options="" />
       <module name="customer-service" options="" />
       <module name="ecom-eureka-server" options="" />
       <module name="ecom-eureka-server (1)" options="" />
       <module name="ecom-gateway" options="" />
       <module name="geo-service" options="" />
+      <module name="order-service" options="" />
+      <module name="payment-service" options="" />
+      <module name="review-service" options="" />
+      <module name="settings-service" options="" />
+      <module name="shipping-service" options="" />
     </option>
   </component>
 </project>

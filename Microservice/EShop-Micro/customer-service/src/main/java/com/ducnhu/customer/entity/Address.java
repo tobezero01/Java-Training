@@ -1,5 +1,6 @@
 package com.ducnhu.customer.entity;
 
+import com.ducnhu.auth.entity.Customer;
 import jakarta.persistence.*;
 
 @Entity
@@ -180,4 +181,5 @@ public class Address {
         if (!phoneNumber.isEmpty()) address += ". Phone Number : " + phoneNumber;
         return address;
     }
+
 }

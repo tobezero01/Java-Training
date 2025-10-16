@@ -32,6 +32,15 @@
         <module>geo-service</module>
         <module>catalog-service</module>
 
+        <module>cart-service</module>
+        <module>checkout-service</module>
+        <module>shipping-service</module>
+
+        <module>settings-service</module>
+        <module>review-service</module>
+        <module>payment-service</module>
+        <module>order-service</module>
+
     </modules>
     <properties>
         <java.version>17</java.version>

@@ -16,9 +16,11 @@ public class RequestReplyClient {
     private final KafkaTemplate<String, Object> kafkaTemplate;
     private final ObjectMapper objectMapper;
 
-    private final ConcurrentMap<String, CompletableFuture<Object>> waiters = new ConcurrentHashMap<>() ;
+    private final ConcurrentMap<String, CompletableFuture<Object>> waiters = new ConcurrentHashMap<>();
 
-    /** Gửi request (payload có correlationId, replyTo) và đợi response qua topic reply. */
+    /**
+     * Gửi request (payload có correlationId, replyTo) và đợi response qua topic reply.
+     */
     public <TReq, TResp> TResp request(String topic, String replyTopic, Class<TResp> respType,
                                        Function<String, TReq> build, Duration timeout) {
         String corr = UUID.randomUUID().toString();
@@ -40,7 +42,9 @@ public class RequestReplyClient {
         }
     }
 
-    /** Receiver chung cho các reply topics — đăng ký @KafkaListener ở service cụ thể. */
+    /**
+     * Receiver chung cho các reply topics — đăng ký @KafkaListener ở service cụ thể.
+     */
     public void complete(String correlationId, Object resp) {
         CompletableFuture<Object> fut = waiters.remove(correlationId);
         if (fut != null) fut.complete(resp);

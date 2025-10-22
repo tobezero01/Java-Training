@@ -1,6 +1,7 @@
 package com.ducnhu.cart;
 
 import com.ducnhu.cart.dto.AddReq;
+import com.ducnhu.cart.dto.AddResult;
 import com.ducnhu.cart.dto.CartActionResp;
 import com.ducnhu.cart.dto.UpdateReq;
 import com.ducnhu.cart.service.ShoppingCartService;
@@ -22,9 +23,9 @@ public class CartController {
 
     @PostMapping("/items")
     public ResponseEntity<?> add(@RequestBody AddReq req) {
-        Integer q = cart.addProduct(me(), req.productId(), req.quantity());
-        float subtotal = cart.updateQuantity(me(), req.productId(), q);
-        return ResponseEntity.ok(new CartActionResp(req.productId(), q, subtotal, "Add to cart"));
+        AddResult q = cart.addProduct(me(), req.productId(), req.quantity());
+        //float subtotal = cart.updateQuantity(me(), req.productId(), q);
+        return ResponseEntity.ok(new CartActionResp(req.productId(), q.quantity(), q.subtotal(), "Add to cart"));
     }
 
     @PatchMapping("/items/{productId}")

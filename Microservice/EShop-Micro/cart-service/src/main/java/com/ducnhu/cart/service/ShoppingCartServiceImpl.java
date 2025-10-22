@@ -1,5 +1,6 @@
 package com.ducnhu.cart.service;
 
+import com.ducnhu.cart.dto.AddResult;
 import com.ducnhu.cart.entity.CartItem;
 import com.ducnhu.cart.repository.CartItemRepository;
 import com.ducnhu.common.events.catalog.ProductSnapshot;
@@ -39,7 +40,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     }
 
     @Override
-    public Integer addProduct(Integer customerId, Integer productId, Integer quantity) {
+    public AddResult addProduct(Integer customerId, Integer productId, Integer quantity) {
         if (quantity == null || quantity <= 1) {
             quantity = 1;
         }
@@ -69,7 +70,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
             cartItem.setImage(productSnapshot.mainImagePath());
         }
         repository.save(cartItem);
-        return cartItem.getQuantity();
+        return new AddResult(cartItem.getQuantity(), cartItem.getSubtotal());
     }
 
     @Override

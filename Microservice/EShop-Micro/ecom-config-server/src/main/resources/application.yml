@@ -18,21 +18,15 @@ spring:
     database: ${SPRING_REDIS_DATABASE:0}
     timeout: ${SPRING_REDIS_TIMEOUT:60s}
     ssl: ${SPRING_REDIS_SSL:false}
-
-  jpa:
-    hibernate:
-      ddl-auto: ${JPA_DDL_AUTO:update}
-    show-sql: ${JPA_SHOW_SQL:false}
-    properties:
-      hibernate:
-        format_sql: ${HIBERNATE_FORMAT_SQL:true}
-        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.MySQLDialect}
-
-  security:
-    jwt:
-      issuer: "eshop-auth"
-      secret: "a2VlcC10aGlzLWtleS1wcml2YXRlLWFuZC1hbmQtb25seS1kZXZlbG9wZXItaGF2ZS1wZXJtaXNzaW9uLXRvLWNoYW5nZS1pdC1ub3RpZnktYnktRHVjbmh1YWQ="
-      access-ttl-seconds: 36000
+#
+#  jpa:
+#    hibernate:
+#      ddl-auto: ${JPA_DDL_AUTO:update}
+#    show-sql: ${JPA_SHOW_SQL:false}
+#    properties:
+#      hibernate:
+#        format_sql: ${HIBERNATE_FORMAT_SQL:true}
+#        dialect: ${HIBERNATE_DIALECT:org.hibernate.dialect.MySQLDialect}
 
 eureka:
   client:

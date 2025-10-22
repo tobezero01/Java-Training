@@ -31,6 +31,7 @@ public final class Topics {
     // ORDER EVENTS
     public static final String ORDER_EVENTS = "eshop.order.events";
     public static final String ORDER_PAID_EVENTS = "eshop.order.paid.events";    // OrderPaidEvent
+    public static final String ORDER_CANCELLED_EVENTS = "eshop.order.cancelled.events"; // NEW
 
     // ORDER QUERY (NEW - phục vụ review)
     public static final String ORDER_HAS_PURCHASED_REQ = "eshop.order.hasPurchased.req";

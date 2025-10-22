@@ -15,7 +15,6 @@ import java.util.*;
                 @Index(name = "idx_prod_enabled", columnList = "enabled"),
                 @Index(name = "idx_prod_category", columnList = "category_id"),
                 @Index(name = "idx_prod_brand", columnList = "brand_id")
-                // FULLTEXT tạo bằng migration SQL (bên dưới)
         }
 )
 public class Product {

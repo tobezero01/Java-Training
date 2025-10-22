@@ -1,4 +1,4 @@
-package com.ducnhu.catalog;
+package com.ducnhu.catalog.kafka;
 
 import com.ducnhu.catalog.entity.product.Product;
 import com.ducnhu.catalog.repository.ProductRepository;

@@ -44,7 +44,7 @@ public class SettingsHandlers {
 
     private String getOrNull(String key) {
         Setting setting = settingRepository.findByKey(key);
-        return key == null ? null : setting.getValue();
+        return setting == null ? null : setting.getValue();
     }
 
     private Integer getInt(String key) {

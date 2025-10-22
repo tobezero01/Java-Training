@@ -10,6 +10,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/checkout")
 @RequiredArgsConstructor
@@ -29,5 +31,17 @@ public class CheckoutController {
         // buộc COD trong orchestrator (giống monolith) :contentReference[oaicite:8]{index=8}
         PlaceOrderRequest cod = new PlaceOrderRequest(req.addressId(), "COD", req.note());
         return ResponseEntity.ok(svc.placeOrderCod(me.id(), me.email(), cod));
+    }
+
+    @PostMapping("/cancel-order")
+    public ResponseEntity<?> cancel(@RequestParam String orderNumber,
+                                    @RequestParam(required = false, defaultValue = "User requested cancellation") String reason) {
+        MeResponse me = auth.me(); // xác thực & lấy customerId
+        svc.compensateCancel(orderNumber, me.id(), reason);
+        return ResponseEntity.accepted().body(Map.of(
+                "cancelled", true,
+                "orderNumber", orderNumber,
+                "reason", reason
+        ));
     }
 }

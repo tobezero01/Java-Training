@@ -35,7 +35,6 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public void save(Address a) {
-        // [STEP] Nếu có countryId → gọi geo-service lấy tên country (snapshot)
         if (a.getCountryId() != null) {
             CountryDTO c = geo.country(a.getCountryId());
             if (c == null) throw new IllegalArgumentException("Invalid country id: " + a.getCountryId());

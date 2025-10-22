@@ -16,7 +16,7 @@ public class ShippingQueryServiceImpl implements ShippingQueryService{
     }
     @Override
     public ShippingRate get(Integer countryId, String stateOrCity) {
-        String key = norm(stateOrCity);
-        return repository.findByCountryIdAndState(countryId, key).orElse(null);
+        String key =  norm(stateOrCity);
+        return repository.findByCountryIdAndStateIgnoreCase(countryId, key).orElse(null);
     }
 }

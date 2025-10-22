@@ -23,7 +23,7 @@ public class AddressQueryHandler {
     public void onReq(AddressQueryRequest req){
         Address a = (req.addressId()!=null)
                 ? addrService.get(req.addressId(), req.customerId())
-                : addrService.getDefaultAddress(new Customer(req.customerId()).getId()); // tuỳ constructor
+                : addrService.getDefaultAddress(req.customerId());
         AddressDTO dto = (a==null? null : new AddressDTO(
                 a.getId(), a.getFirstName(), a.getLastName(), a.getPhoneNumber(),
                 a.getAddressLine1(), a.getAddressLine2(), a.getCity(), a.getState(), a.getPostalCode(),

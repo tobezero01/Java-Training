@@ -3,6 +3,7 @@ package com.ducnhu.checkout.kafka;
 import com.ducnhu.common.events.carts.CartGetResponse;
 import com.ducnhu.common.events.catalog.ProductSnapshotResponse;
 import com.ducnhu.common.events.customer.AddressQueryResponse;
+import com.ducnhu.common.events.settings.EmailSettingsResponse;
 import com.ducnhu.common.events.shipping.ShippingRateResponse;
 import com.ducnhu.common.kafka.RequestReplyClient;
 import com.ducnhu.common.kafka.Topics;
@@ -32,6 +33,11 @@ public class ReplyInbox {
 
     @KafkaListener(topics = Topics.CUST_ADDR_RESP, groupId = "checkout-service")
     public void onAddr(AddressQueryResponse resp) {
+        requestReplyClient.complete(resp.correlationId(), resp);
+    }
+
+    @KafkaListener(topics = Topics.SETTINGS_EMAIL_RESP, groupId = "checkout-service")
+    public void onEmail(EmailSettingsResponse resp) {
         requestReplyClient.complete(resp.correlationId(), resp);
     }
 }

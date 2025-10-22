@@ -48,7 +48,8 @@ public class AuthServiceImpl implements AuthService {
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("fullName", user.getFullName() == null ? "" : user.getFullName());
-
+        claims.put("sub", user.getCustomer().getId());
+        claims.put("email", user.getUsername());
         String accessToken = jwtTokenService.generateAccessToken(user, claims);
 
         // Issue refresh token + HttpOnly cookie
@@ -85,7 +86,9 @@ public class AuthServiceImpl implements AuthService {
         CustomerUserDetails user = userDetailsService.loadUserById(refreshToken.getCustomerId());
 
         Map<String, Object> claims = Map.of(
-                "fullName", user.getFullName() == null ? "" : user.getFullName()
+                "fullName", user.getFullName() == null ? "" : user.getFullName(),
+                "email", user.getUsername(),
+                "sub", user.getCustomer().getId()
         );
         String accessToken = jwtTokenService.generateAccessToken(user, claims);
 

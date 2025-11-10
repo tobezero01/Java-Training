@@ -1,14 +1,31 @@
 server:
   port: 9002
+
 spring:
+  application:
+    name: catalog-service
+  config:
+    import: "optional:configserver:http://config-server:8888"
+  cloud:
+    config:
+      fail-fast: true
+      retry:
+        initial-interval: 1000
+        max-attempts: 20
   datasource:
-    url: jdbc:mysql://localhost:3306/catalog_eshopdb?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Bangkok
+    url: jdbc:mysql://host.docker.internal:3306/catalog_eshopdb?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Bangkok
     username: root
     password: ducnhu1234
   jpa:
     hibernate:
       ddl-auto: update
     show-sql: false
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: catalog-service
+    listener:
+      ack-mode: record
   redis:
     host: ${SPRING_REDIS_HOST:localhost}
     port: ${SPRING_REDIS_PORT:6379}
@@ -16,6 +33,29 @@ spring:
     database: ${SPRING_REDIS_DATABASE:0}
     timeout: ${SPRING_REDIS_TIMEOUT:60s}
     ssl: ${SPRING_REDIS_SSL:false}
+  # ✨ KHÔNG còn phần autoconfigure.exclude
+  security:
+    jwt:
+      issuer: eshop-auth
+      secret: ${JWT_SECRET:a2VlcC10aGlzLWtleS1wcml2YXRlLWFuZC1hbmQtb25seS1kZXZlbG9wZXItaGF2ZS1wZXJtaXNzaW9uLXRvLWNoYW5nZS1pdC1ub3RpZnktYnktRHVjbmh1YWQ=}
+      access-ttl-seconds: 36000
+    whitelist:
+      - /actuator/**
+      - /v3/api-docs/**
+      - /swagger-ui/**
+      - /api/categories/**
+      - /api/products/**
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:8761/eureka
+
+app:
+  security:
+    enabled: true
+
+
 
 jobs:
   categoryHierarchy:

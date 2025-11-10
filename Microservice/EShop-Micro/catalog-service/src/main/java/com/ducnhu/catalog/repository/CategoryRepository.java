@@ -1,6 +1,7 @@
 package com.ducnhu.catalog.repository;
 
 import com.ducnhu.catalog.entity.Category;
+import com.ducnhu.common.exception.CategoryNotFoundException;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
@@ -28,5 +29,9 @@ public interface CategoryRepository extends JpaRepository<Category, Integer> {
     @Query("UPDATE Category c SET c.allParentIDs = :path WHERE c.id = :id")
     void updateAllParentIds(@Param("id") Integer id, @Param("path") String path);
 
+    default Category getByIdOrThrow(Integer id) throws CategoryNotFoundException {
+        return findById(id).orElseThrow(() -> new CategoryNotFoundException(
+                "Category not found with id " + id));
+    }
 }
 

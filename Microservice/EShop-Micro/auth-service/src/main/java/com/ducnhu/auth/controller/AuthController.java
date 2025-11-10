@@ -29,9 +29,15 @@ public class AuthController {
         return ResponseEntity.ok(authService.login(request, httpRequest, httpResponse));
     }
 
-    @GetMapping("/me")
+    @GetMapping("/me2")
     public ResponseEntity<ProfileResponse> getProfile() {
         return ResponseEntity.ok(customerProfileService.getCurrentProfile());
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<MeResponse> me() {
+        MeResponse c = authService.me();
+        return ResponseEntity.ok(new MeResponse(c.id(), c.email(), c.firstName(), c.lastName()) );
     }
 
     @PatchMapping("/me")

@@ -20,140 +20,117 @@ public class OrderHandlers {
     private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @KafkaListener(topics = Topics.ORDER_EVENTS, groupId = "order-service")
-    public void onPlaced(Object payload) {
-        if (payload instanceof OrderPlacedEventV2 e) {
-            Order order = new Order();
-            order.setOrderNumber(e.orderNumber());
-            order.setOrderTime(e.createdAt());
+    public void onPlaced(OrderPlacedEventV2 e) {
+        Order order = new Order();
+        order.setOrderNumber(e.orderNumber());
+        order.setOrderTime(e.createdAt());
 
-            // Customer snapshot
-            order.setCustomerId(e.customer().id());
-            order.setCustomerEmail(e.customer().email());
+        // Customer snapshot
+        order.setCustomerId(e.customer().id());
+        order.setCustomerEmail(e.customer().email());
 
-            // Address snapshot
-            AddressSnapshot s = e.shippingAddress();
-            order.setFirstName(s.firstName());
-            order.setLastName(s.lastName());
-            order.setPhoneNumber(s.phoneNumber());
-            order.setAddressLine1(s.line1());
-            order.setAddressLine2(s.line2());
-            order.setCity(s.city());
-            order.setState(s.state());
-            order.setPostalCode(s.postalCode());
-            order.setCountry(s.country());
+        // Address snapshot
+        AddressSnapshot s = e.shippingAddress();
+        order.setFirstName(s.firstName());
+        order.setLastName(s.lastName());
+        order.setPhoneNumber(s.phoneNumber());
+        order.setAddressLine1(s.line1());
+        order.setAddressLine2(s.line2());
+        order.setCity(s.city());
+        order.setState(s.state());
+        order.setPostalCode(s.postalCode());
+        order.setCountry(s.country());
 
-            // Payment flag
-            order.setPaymentMethod("PAYPAL".equalsIgnoreCase(e.paymentMethod()) ? PaymentMethod.PAYPAL : PaymentMethod.COD);
-            order.setStatus(OrderStatus.NEW);
+        // Payment/Status
+        order.setPaymentMethod("PAYPAL".equalsIgnoreCase(e.paymentMethod()) ? PaymentMethod.PAYPAL : PaymentMethod.COD);
+        order.setStatus(OrderStatus.NEW);
 
-            // Totals (nếu dùng BigDecimal ở entity thì map thẳng; hiện entity là float → convert)
-            order.setProductCost(0f);
-            order.setSubtotal(e.productTotal());
-            order.setShippingCost(e.shippingCost());
-            order.setTax(0f);
-            order.setTotal(e.paymentTotal());
-            order.setDeliverDays(0);
-            order.setDeliverDate(null);
+        // Totals
+        order.setProductCost(0f);
+        order.setSubtotal(e.productTotal());
+        order.setShippingCost(e.shippingCost());
+        order.setTax(0f);
+        order.setTotal(e.paymentTotal());
+        order.setDeliverDays(0);
+        order.setDeliverDate(null);
 
-            // Items giữ nguyên như V1 (OrderPlacedItem không đổi)
-            for (OrderPlacedItem it : e.items()) {
-                OrderDetail d = new OrderDetail();
-                d.setOrder(order);
-                d.setProductId(it.productId());
-                d.setProductName(it.name());
-                d.setProductAlias(it.alias());
-                d.setProductImage(it.image());
-                d.setUnitPrice(it.unitPrice());
-                d.setQuantity(it.quantity());
-                d.setSubtotal(it.subtotal());
-                d.setShippingCost(it.shippingCost());
-                d.setProductCost(0f);
-                order.getOrderDetails().add(d);
-            }
-
-            OrderTrack track = new OrderTrack();
-            track.setOrder(order);
-            track.setStatus(OrderStatus.NEW);
-            track.setUpdatedTime(new Date());
-            track.setNotes("Order placed (V2 snapshot)");
-            order.getOrderTracks().add(track);
-
-            orderRepository.save(order);
-            return;
+        // Items
+        for (OrderPlacedItem it : e.items()) {
+            OrderDetail d = new OrderDetail();
+            d.setOrder(order);
+            d.setProductId(it.productId());
+            d.setProductName(it.name());
+            d.setProductAlias(it.alias());
+            d.setProductImage(it.image());
+            d.setUnitPrice(it.unitPrice());
+            d.setQuantity(it.quantity());
+            d.setSubtotal(it.subtotal());
+            d.setShippingCost(it.shippingCost());
+            d.setProductCost(0f);
+            order.getOrderDetails().add(d);
         }
 
-        if (payload instanceof OrderPlacedEvent e) {
-            // === Fallback V1: logic hiện tại của bạn ===
-            Order order = new Order();
-            order.setOrderNumber(e.orderNumber());
-            order.setOrderTime(e.createdAt());
-            order.setCustomerId(e.customerId());
-            order.setCustomerEmail(e.customerEmail());
+        // Track
+        OrderTrack track = new OrderTrack();
+        track.setOrder(order);
+        track.setStatus(OrderStatus.NEW);
+        track.setUpdatedTime(new java.util.Date());
+        track.setNotes("Order placed (V2 snapshot)");
+        order.getOrderTracks().add(track);
 
-            // address (thiếu, như code cũ)
-            order.setFirstName("");
-            order.setLastName("");
-            order.setPhoneNumber("");
-            order.setAddressLine1(e.addressLine());
-            order.setAddressLine2("");
-            order.setCity("");
-            order.setState("");
-            order.setPostalCode("");
-            order.setCountry("");
-
-            order.setPaymentMethod(PaymentMethod.COD);
-            order.setStatus(OrderStatus.NEW);
-
-            order.setProductCost(0f);
-            order.setSubtotal(e.productTotal());
-            order.setShippingCost(e.shippingCost());
-            order.setTax(0f);
-            order.setTotal(e.paymentTotal());
-            order.setDeliverDays(0);
-            order.setDeliverDate(null);
-
-            for (OrderPlacedItem it : e.items()) { /* như cũ */ }
-
-            OrderTrack track = new OrderTrack();
-            track.setOrder(order);
-            track.setStatus(OrderStatus.NEW);
-            track.setUpdatedTime(new Date());
-            track.setNotes("Order placed (V1)");
-            order.getOrderTracks().add(track);
-
-            orderRepository.save(order);
-        }
+        orderRepository.save(order);
     }
 
     @KafkaListener(topics = Topics.ORDER_PAID_EVENTS, groupId = "order-service")
-    public void onPaid(OrderPaidEvent event) {
-        Order order = orderRepository.findByOrderNumberAndCustomerId(event.orderNumber(), event.customerId())
+    public void onPaid(OrderPaidEventV2  ev) {
+        Order order = orderRepository.findByOrderNumberAndCustomerId(ev.orderNumber(), ev.customerId())
                 .orElseGet(() -> {
-                    Order order1 = new Order();
-                    order1.setOrderNumber(event.orderNumber());
-                    order1.setCustomerId(event.customerId());
-                    order1.setOrderTime(new Date());
-                    order1.setCustomerEmail(event.customerEmail());
-                    order1.setPaymentMethod(PaymentMethod.PAYPAL);
-                    order1.setStatus(OrderStatus.PAID);
-                    return order1;
-                });
-        order.setStatus(OrderStatus.PAID);
+                    Order o = new Order();
+                    o.setOrderNumber(ev.orderNumber());
+                    o.setCustomerId(ev.customerId());
+                    o.setOrderTime(new Date());
+                    o.setCustomerEmail(ev.customerEmail());
+                    o.setPaymentMethod(PaymentMethod.PAYPAL);
+                    o.setStatus(OrderStatus.NEW);
 
+                    AddressSnapshot s = ev.shippingAddress();
+                    String line1 = (s != null && s.line1()!=null && !s.line1().isBlank()) ? s.line1() : "N/A";
+                    String country = (s != null && s.country()!=null && !s.country().isBlank()) ? s.country() : "Unknown";
+
+                    o.setFirstName(s != null ? nz(s.firstName()) : "");
+                    o.setLastName(s != null ? nz(s.lastName()) : "");
+                    o.setPhoneNumber(s != null ? nz(s.phoneNumber()) : "");
+                    o.setAddressLine1(line1);
+                    o.setAddressLine2(s != null ? nz(s.line2()) : "");
+                    o.setCity(s != null ? nz(s.city()) : "");
+                    o.setState(s != null ? nz(s.state()) : "");
+                    o.setPostalCode(s != null ? nz(s.postalCode()) : "");
+                    o.setCountry(country);
+
+                    o.setSubtotal(0f);
+                    o.setShippingCost(0f);
+                    o.setTax(0f);
+                    o.setTotal(ev.paidAmount());
+                    return o;
+                });
+        if (ev.deliverDays() != null) order.setDeliverDays(ev.deliverDays());
+        if (ev.deliverDate() != null) order.setDeliverDate(ev.deliverDate());
+        order.setStatus(OrderStatus.PAID);
         order.setPaymentMethod(PaymentMethod.PAYPAL);
-        order.setPaymentTransactionId(event.transactionId());
-        order.setPaidAmount(event.paidAmount());
-        order.setPaidCurrency(event.currency());
-        order.setPaidTime(event.paidTime());
+        order.setPaymentTransactionId(ev.transactionId());
+        order.setPaidAmount(ev.paidAmount());
+        order.setPaidCurrency(ev.currency());
+        order.setPaidTime(ev.paidTime());
 
         OrderTrack t = new OrderTrack();
         t.setOrder(order);
         t.setStatus(OrderStatus.PAID);
         t.setUpdatedTime(new Date());
-        t.setNotes("PayPal captured");
+        t.setNotes("PayPal captured (V2)");
         order.getOrderTracks().add(t);
 
         orderRepository.save(order);
+        return;
     }
 
     @KafkaListener(topics = Topics.ORDER_CANCELLED_EVENTS, groupId = "order-service")
@@ -170,12 +147,13 @@ public class OrderHandlers {
         });
     }
 
-    @KafkaListener(topics = Topics.ORDER_HAS_PURCHASED_REQ, groupId="order-service")
-    public void onHasPurchased(OrderHasPurchasedRequest req){
+    @KafkaListener(topics = Topics.ORDER_HAS_PURCHASED_REQ, groupId = "order-service")
+    public void onHasPurchased(OrderHasPurchasedRequest req) {
         boolean purchased = orderRepository.existsPurchased(req.customerId(), req.productId(),
                 List.of(OrderStatus.PAID, OrderStatus.DELIVERED));
         kafkaTemplate.send(Topics.ORDER_HAS_PURCHASED_RESP,
                 new OrderHasPurchasedResponse(req.correlationId(), req.customerId(), req.productId(), purchased));
     }
+    private static String nz(String s){ return s == null ? "" : s; }
 
 }

@@ -37,12 +37,12 @@ public class CategoryRestController {
     }
 
     @GetMapping("/alias/{alias}")
-    public ResponseEntity<CategoryDTO> byAlias(@PathVariable String alias) throws CategoryNotFoundException {
+    public ResponseEntity<CategoryDTO> byAlias(@PathVariable("alias") String alias) throws CategoryNotFoundException {
         return ResponseEntity.ok(categoryService.getCategory(alias));
     }
 
     @GetMapping("/{id}/parents")
-    public ResponseEntity<List<CategoryDTO>> parents(@PathVariable Integer id) throws CategoryNotFoundException {
+    public ResponseEntity<List<CategoryDTO>> parents(@PathVariable("id") Integer id) throws CategoryNotFoundException {
         return ResponseEntity.ok(categoryService.getAncestorsPath(id));
     }
 }

@@ -2,21 +2,28 @@ spring:
   application:
     name: settings-service
   config:
-    import: "optional:configserver:"
-  cloud:
-    config:
-      discovery:
-        enabled: true
-        service-id: config-server
+    import: "optional:configserver:http://config-server:8888"
+
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     consumer:
       group-id: settings-service
+  security:
+    jwt:
+      issuer: eshop-auth
+      secret: ${JWT_SECRET:a2VlcC10aGlzLWtleS1wcml2YXRlLWFuZC1hbmQtb25seS1kZXZlbG9wZXItaGF2ZS1wZXJtaXNzaW9uLXRvLWNoYW5nZS1pdC1ub3RpZnktYnktRHVjbmh1YWQ}
+      access-ttl-seconds: 36000
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/settings_eshopdb?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC}
+    url: ${DB_URL:jdbc:mysql://host.docker.internal:3306/eshopdb?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC}
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:ducnhu1234}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
       ddl-auto: update
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:8761/eureka
+  instance:
+    prefer-ip-address: false

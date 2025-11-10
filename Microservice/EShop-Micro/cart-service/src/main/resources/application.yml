@@ -2,28 +2,43 @@ spring:
   application:
     name: cart-service
   config:
-    import: "optional:configserver:"
+    import: "optional:configserver:http://config-server:8888"
   cloud:
     config:
-      discovery:
-        enabled: true
-        service-id: config-server
+      fail-fast: true
+      retry:
+        initial-interval: 1000
+        max-attempts: 20
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     consumer:
       group-id: cart-service
     listener:
       ack-mode: record
+    producer:
+      # Tùy chọn: tắt idempotence để tránh InitProducerId (chỉ DEV)
+      properties:
+        enable.idempotence: false
+      # hoặc giữ idempotent nhưng rút ngắn timeout để fail nhanh:
+      properties.request.timeout.ms: 10000
+      properties.delivery.timeout.ms: 15000
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/cart_eshopdb?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC}
+    url: ${DB_URL:jdbc:mysql://host.docker.internal:3306/cart_eshopdb?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC}
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:ducnhu1234}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
       ddl-auto: update
-
+  security:
+    jwt:
+      issuer: eshop-auth            # phải khớp với issuer mà AuthService phát hành token
+      secret: ${JWT_SECRET:a2VlcC10aGlzLWtleS1wcml2YXRlLWFuZC1hbmQtb25seS1kZXZlbG9wZXItaGF2ZS1wZXJtaXNzaW9uLXRvLWNoYW5nZS1pdC1ub3RpZnktYnktRHVjbmh1YWQ=}
+      access-ttl-seconds: 36000
+app:
+  security:
+    enabled: true
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://eureka:8761/eureka

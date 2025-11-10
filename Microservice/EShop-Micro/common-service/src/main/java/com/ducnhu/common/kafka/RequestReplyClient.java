@@ -28,7 +28,7 @@ public class RequestReplyClient {
         TReq payload = build.apply(corr);
         CompletableFuture<Object> future = new CompletableFuture<>();
         waiters.put(corr, future);
-        kafkaTemplate.send(topic, payload);
+        kafkaTemplate.send(topic, corr, payload);
 
         try {
             Object resp = future.get(timeout.toMillis(), TimeUnit.MILLISECONDS);

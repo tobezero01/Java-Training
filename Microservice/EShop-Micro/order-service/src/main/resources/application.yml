@@ -2,21 +2,42 @@ spring:
   application:
     name: order-service
   config:
-    import: "optional:configserver:"
+    # ← Chỉ rõ URL Config Server trong mạng compose
+    import: "optional:configserver:http://config-server:8888"
   cloud:
     config:
-      discovery:
-        enabled: true
-        service-id: config-server
+      fail-fast: true
+      retry:
+        initial-interval: 1000
+        max-attempts: 20
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     consumer:
       group-id: order-service
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.use.type.headers: true
+        spring.json.trusted.packages: "com.ducnhu.common.events.orders"
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/order_eshopdb?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC}
+    url: ${DB_URL:jdbc:mysql://host.docker.internal:3306/order_eshopdb?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC}
     username: ${DB_USERNAME:root}
     password: ${DB_PASSWORD:ducnhu1234}
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
       ddl-auto: update
+  security:
+    jwt:
+      issuer: eshop-auth            # phải khớp với issuer mà AuthService phát hành token
+      secret: ${JWT_SECRET:a2VlcC10aGlzLWtleS1wcml2YXRlLWFuZC1hbmQtb25seS1kZXZlbG9wZXItaGF2ZS1wZXJtaXNzaW9uLXRvLWNoYW5nZS1pdC1ub3RpZnktYnktRHVjbmh1YWQ}
+      access-ttl-seconds: 36000
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:8761/eureka
+  instance:
+    prefer-ip-address: false
+app:
+  security:
+    enabled: true

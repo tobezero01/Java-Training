@@ -3,12 +3,13 @@ package com.ducnhu.customer.service;
 import com.ducnhu.common.cache.CacheKey;
 import com.ducnhu.common.cache.CacheTtl;
 import com.ducnhu.common.cache.RedisCacheService;
-import com.ducnhu.customer.client.GeoClient;
 import com.ducnhu.customer.dto.AddressDTO;
 import com.ducnhu.customer.dto.CountryDTO;
 import com.ducnhu.customer.entity.Address;
+import com.ducnhu.customer.entity.Country;
 import com.ducnhu.customer.mapper.AddressMapper;
 import com.ducnhu.customer.repository.AddressRepository;
+import com.ducnhu.customer.repository.CountryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,12 +21,12 @@ import java.util.List;
 public class AddressServiceImpl implements AddressService {
     private final AddressRepository repo;
     private final RedisCacheService cache;
-    private final GeoClient geo;
+    private final CountryRepository countryRepository;
 
-    public AddressServiceImpl(AddressRepository r, RedisCacheService c, GeoClient g) {
+    public AddressServiceImpl(AddressRepository r, RedisCacheService c,  CountryRepository countryRepository) {
         this.repo = r;
         this.cache = c;
-        this.geo = g;
+        this.countryRepository = countryRepository;
     }
 
     @Override
@@ -36,7 +37,7 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public void save(Address a) {
         if (a.getCountryId() != null) {
-            CountryDTO c = geo.country(a.getCountryId());
+            CountryDTO c = findById(a.getCountryId());
             if (c == null) throw new IllegalArgumentException("Invalid country id: " + a.getCountryId());
             a.setCountryName(c.name());
         }
@@ -66,5 +67,12 @@ public class AddressServiceImpl implements AddressService {
         String key = CacheKey.addrDefault(customerId);
         return cache.getOrLoad(key, Address.class, Duration.ofMinutes(5),
                 () -> repo.findDefaultByCustomer(customerId));
+    }
+
+
+    public CountryDTO findById(Integer id) {
+        Country country = countryRepository.findById(id).orElse(null);
+        return (country==null)? null : new CountryDTO(country.getId(),
+                country.getName(), country.getCode());
     }
 }

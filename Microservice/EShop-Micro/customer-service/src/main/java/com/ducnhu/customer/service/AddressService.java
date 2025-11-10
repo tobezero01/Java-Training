@@ -17,4 +17,5 @@ public interface AddressService {
     void setDefaultAddress(Integer defaultAddressId, Integer customerId);
 
     Address getDefaultAddress(Integer customerId);
+
 }

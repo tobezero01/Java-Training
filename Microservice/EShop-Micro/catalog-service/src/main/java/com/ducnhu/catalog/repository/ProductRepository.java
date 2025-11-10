@@ -52,23 +52,23 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
             """)
     Product findByAlias(@Param("alias") String alias);
 
-    @Query(value = """
-                SELECT *
-                FROM Products p
-                WHERE p.enabled = 1
-                  AND MATCH (name, short_description, full_description)
-                      AGAINST (?1)
-            """, nativeQuery = true)
-    Page<Product> search(String keyword, Pageable pageable);
+//    @Query(value = """
+//                SELECT *
+//                FROM Products p
+//                WHERE p.enabled = 1
+//                  AND MATCH (name, short_description, full_description)
+//                      AGAINST (?1)
+//            """, nativeQuery = true)
+//    Page<Product> search(String keyword, Pageable pageable);
 
-    @Modifying(flushAutomatically = true, clearAutomatically = true)
-    @Query("""
-                UPDATE Product p
-                SET p.averageRating = COALESCE((SELECT AVG(r.rating) FROM Review r WHERE r.product.id = :productId), 0),
-                    p.reviewCount   = (SELECT COUNT(r.id) FROM Review r WHERE r.product.id = :productId)
-                WHERE p.id = :productId
-            """)
-    void updateReviewCountAndAverageRating(@Param("productId") Integer productId);
+//    @Modifying(flushAutomatically = true, clearAutomatically = true)
+//    @Query("""
+//                UPDATE Product p
+//                SET p.averageRating = COALESCE((SELECT AVG(r.rating) FROM Review r WHERE r.product.id = :productId), 0),
+//                    p.reviewCount   = (SELECT COUNT(r.id) FROM Review r WHERE r.product.id = :productId)
+//                WHERE p.id = :productId
+//            """)
+//    void updateReviewCountAndAverageRating(@Param("productId") Integer productId);
 
 //    @Query(
 //            value = """

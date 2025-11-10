@@ -1,14 +1,47 @@
+outbox:
+  batch-size: 50
+  publish-interval-ms: 2000
 spring:
   application:
     name: payment-service
   config:
-    import: "optional:configserver:"
+    # ← Chỉ rõ URL Config Server trong mạng compose
+    import: "optional:configserver:http://config-server:8888"
   cloud:
     config:
-      discovery:
-        enabled: true
-        service-id: config-server
+      fail-fast: true
+      retry:
+        initial-interval: 1000
+        max-attempts: 20
+  datasource:
+    url: jdbc:mysql://host.docker.internal:3306/payment_eshopdb?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC
+    username: root
+    password: ducnhu1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
   kafka:
     bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
     consumer:
       group-id: payment-service
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  security:
+    jwt:
+      issuer: eshop-auth            # phải khớp với issuer mà AuthService phát hành token
+      secret: ${JWT_SECRET:a2VlcC10aGlzLWtleS1wcml2YXRlLWFuZC1hbmQtb25seS1kZXZlbG9wZXItaGF2ZS1wZXJtaXNzaW9uLXRvLWNoYW5nZS1pdC1ub3RpZnktYnktRHVjbmh1YWQ=}
+      access-ttl-seconds: 36000
+eureka:
+  client:
+    service-url:
+      defaultZone: http://eureka:8761/eureka
+  instance:
+    prefer-ip-address: false
+app:
+  security:
+    enabled: true
+logging:
+  level:
+    org.springframework.security: DEBUG

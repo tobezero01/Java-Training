@@ -7,7 +7,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.ScanOptions;
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -23,7 +22,8 @@ public class RedisCacheService {
     private final ObjectMapper objectMapper;
 
     private static final String NULL_MARKER = "__NULL__";
-    private static final Duration DEFAULT_NULL_TTL = Duration.ofSeconds(45);;
+    private static final Duration DEFAULT_NULL_TTL = Duration.ofSeconds(45);
+    ;
 
     public boolean hasKey(String key) {
         return redisTemplate.hasKey(key);
@@ -37,27 +37,34 @@ public class RedisCacheService {
         return NULL_MARKER.equals(raw);
     }
 
-    /**Lấy từ cache; nếu miss -> loader.get(); -> put(key,val,ttl); -> trả về */
-    public <T> T getOrLoad(String key, Class<T> type, Duration ttl, Supplier<T> loader) {
-        if (hasKey(key)) {
-            String raw = redisTemplate.opsForValue().get(key);
-            if (raw == null || isNullMarker(raw)) return null;
+    /**
+     * Lấy từ cache; nếu miss -> loader.get(); -> put(key,val,ttl); -> trả về
+     */
+    public <T> T getOrLoad(String key, Class<T> type, Duration ttl,
+                           java.util.function.Supplier<T> loader) {
+        String raw = redisTemplate.opsForValue().get(key);
+        if (raw != null) {
+            if (isNullMarker(raw)) return null;
             try {
                 return objectMapper.readValue(raw, type);
-            } catch (Exception  e) {
+            } catch (Exception e) {
                 evict(key);
             }
         }
         T val = loader.get();
-        if (val == null) { putNull(key, DEFAULT_NULL_TTL); return null; }
+        if (val == null) {
+            putNull(key, DEFAULT_NULL_TTL);
+            return null;
+        }
         put(key, val, ttl);
         return val;
     }
 
-    public <T> T getOrLoad(String key, TypeReference<T> ref, Duration ttl, Supplier<T> loader) {
-        if (hasKey(key)) {
-            String raw = redisTemplate.opsForValue().get(key);
-            if (raw == null || isNullMarker(raw)) return null;
+    public <T> T getOrLoad(String key, com.fasterxml.jackson.core.type.TypeReference<T> ref,
+                           Duration ttl, java.util.function.Supplier<T> loader) {
+        String raw = redisTemplate.opsForValue().get(key);
+        if (raw != null) {
+            if (isNullMarker(raw)) return null;
             try {
                 return objectMapper.readValue(raw, ref);
             } catch (Exception e) {
@@ -65,12 +72,17 @@ public class RedisCacheService {
             }
         }
         T val = loader.get();
-        if (val == null) { putNull(key, DEFAULT_NULL_TTL); return null; }
+        if (val == null) {
+            putNull(key, DEFAULT_NULL_TTL);
+            return null;
+        }
         put(key, val, ttl);
         return val;
     }
 
-    /** Ghi cache với TTL */
+    /**
+     * Ghi cache với TTL
+     */
     public void put(String key, Object value, Duration ttl) {
         if (value == null) {
             putNull(key, DEFAULT_NULL_TTL);
@@ -86,7 +98,7 @@ public class RedisCacheService {
 
     public boolean putIfAbsent(String key, Object value, Duration ttl) {
         if (value == null) {
-            return Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(key, NULL_MARKER ,
+            return Boolean.TRUE.equals(redisTemplate.opsForValue().setIfAbsent(key, NULL_MARKER,
                     (ttl != null ? ttl : DEFAULT_NULL_TTL))
             );
         }
@@ -144,4 +156,6 @@ public class RedisCacheService {
     public ObjectMapper getObjectMapper() {
         return objectMapper;
     }
+
+
 }

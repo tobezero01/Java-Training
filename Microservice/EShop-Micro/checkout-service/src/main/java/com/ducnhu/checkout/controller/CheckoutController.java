@@ -20,7 +20,7 @@ public class CheckoutController {
     private final CheckoutService svc;
 
     @GetMapping("/summary")
-    public CheckoutSummaryDTO summary(@RequestParam(required = false) Integer addressId) {
+    public CheckoutSummaryDTO summary(@RequestParam(name = "addressId", required = false) Integer addressId) {
         MeResponse me = auth.me();
         return svc.summarize(me.id(), addressId);
     }
@@ -34,8 +34,8 @@ public class CheckoutController {
     }
 
     @PostMapping("/cancel-order")
-    public ResponseEntity<?> cancel(@RequestParam String orderNumber,
-                                    @RequestParam(required = false, defaultValue = "User requested cancellation") String reason) {
+    public ResponseEntity<?> cancel(@RequestParam(name = "orderNumber") String orderNumber,
+                                    @RequestParam(name = "reason", required = false, defaultValue = "User requested cancellation") String reason) {
         MeResponse me = auth.me(); // xác thực & lấy customerId
         svc.compensateCancel(orderNumber, me.id(), reason);
         return ResponseEntity.accepted().body(Map.of(

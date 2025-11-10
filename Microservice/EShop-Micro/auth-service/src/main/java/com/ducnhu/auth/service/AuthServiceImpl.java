@@ -48,7 +48,7 @@ public class AuthServiceImpl implements AuthService {
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("fullName", user.getFullName() == null ? "" : user.getFullName());
-        claims.put("sub", user.getCustomer().getId());
+        claims.put("subId", user.getCustomer().getId());
         claims.put("email", user.getUsername());
         String accessToken = jwtTokenService.generateAccessToken(user, claims);
 
@@ -88,7 +88,7 @@ public class AuthServiceImpl implements AuthService {
         Map<String, Object> claims = Map.of(
                 "fullName", user.getFullName() == null ? "" : user.getFullName(),
                 "email", user.getUsername(),
-                "sub", user.getCustomer().getId()
+                "subId", user.getCustomer().getId()
         );
         String accessToken = jwtTokenService.generateAccessToken(user, claims);
 
@@ -115,8 +115,7 @@ public class AuthServiceImpl implements AuthService {
                 (CustomerUserDetails) userDetailsService.loadUserByUsername(auth.getName());
         Customer customer = userDetails.getCustomer();
         return new MeResponse(customer.getId(), customer.getEmail(),
-                customer.getFirstName(), customer.getLastName(),
-                customer.getPhoneNumber(), customer.getAddress());
+                customer.getFirstName(), customer.getLastName());
     }
 
     @Override

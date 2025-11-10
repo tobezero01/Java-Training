@@ -1,6 +1,9 @@
 package com.ducnhu.checkout.service;
 
 import com.ducnhu.checkout.dto.*;
+import com.ducnhu.checkout.outbox.OutboxService;
+import com.ducnhu.checkout.saga.OrderSagaEntity;
+import com.ducnhu.checkout.saga.OrderSagaService;
 import com.ducnhu.checkout.saga.OrderSagaState;
 import com.ducnhu.checkout.saga.OrderSagaStore;
 import com.ducnhu.common.events.carts.CartClearCommand;
@@ -25,6 +28,7 @@ import com.ducnhu.common.kafka.Topics;
 import com.ducnhu.common.mail.CommonMailService;
 import com.ducnhu.common.mail.MailUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -38,6 +42,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class CheckoutServiceImpl implements CheckoutService {
     private final RequestReplyClient requestReplyClient;
     private final KafkaTemplate<String, Object> kafkaTemplate;
@@ -45,13 +50,15 @@ public class CheckoutServiceImpl implements CheckoutService {
     private static final int DIM_DIVISOR = 139;
     private final OrderSagaStore store;
     private final AuthClient auth;
+    private final OutboxService outbox;          // NEW: outbox dual-write
+    private final OrderSagaService saga;         // NEW: DB+Redis saga
 
     @Override
     public CheckoutSummaryDTO summarize(Integer customerId, Integer addressId) {
         CartGetResponse cartGetResponse = requestReplyClient.request(
                 Topics.CART_GET_REQ, Topics.CART_GET_RESP, CartGetResponse.class,
                 corr -> new CartGetRequest(corr, Topics.CART_GET_RESP, customerId),
-                Duration.ofSeconds(3)
+                Duration.ofSeconds(10)
         );
         if (cartGetResponse.items() == null || cartGetResponse.items().isEmpty()) {
             throw new CartItemNotFoundException("Cart is empty");
@@ -61,7 +68,7 @@ public class CheckoutServiceImpl implements CheckoutService {
         AddressQueryResponse addressQueryResponse = requestReplyClient.request(
                 Topics.CUST_ADDR_REQ, Topics.CUST_ADDR_RESP, AddressQueryResponse.class,
                 corr -> new AddressQueryRequest(corr, Topics.CUST_ADDR_RESP, customerId, addressId),
-                Duration.ofSeconds(3)
+                Duration.ofSeconds(10)
         );
 
         AddressDTO address = addressQueryResponse.address();
@@ -72,7 +79,7 @@ public class CheckoutServiceImpl implements CheckoutService {
                 Topics.SHIP_RATE_REQ, Topics.SHIP_RATE_RESP, ShippingRateResponse.class,
                 corr -> new ShippingRateRequest(corr, Topics.SHIP_RATE_RESP, address.countryId(),
                         firstNonBlank(address.state(), address.city())),
-                Duration.ofSeconds(3)
+                Duration.ofSeconds(10)
         );
 
         // 4) product snapshot (đảm bảo tính toán chuẩn xác)
@@ -80,7 +87,7 @@ public class CheckoutServiceImpl implements CheckoutService {
         ProductSnapshotResponse prods = requestReplyClient.request(
                 Topics.CATALOG_PROD_SNAPSHOT_REQ, Topics.CATALOG_PROD_SNAPSHOT_RESP, ProductSnapshotResponse.class,
                 corr -> new ProductSnapshotRequest(corr, Topics.CATALOG_PROD_SNAPSHOT_RESP, ids),
-                Duration.ofSeconds(3)
+                Duration.ofSeconds(8)
         );
         Map<Integer, ProductSnapshot> map = prods.products().stream().collect(Collectors.toMap(ProductSnapshot::id, x -> x));
 
@@ -128,7 +135,7 @@ public class CheckoutServiceImpl implements CheckoutService {
         // lấy cart
         CartGetResponse cart = requestReplyClient.request(
                 Topics.CART_GET_REQ, Topics.CART_GET_RESP, CartGetResponse.class,
-                corr -> new CartGetRequest(corr, Topics.CART_GET_RESP, customerId), Duration.ofSeconds(3)
+                corr -> new CartGetRequest(corr, Topics.CART_GET_RESP, customerId), Duration.ofSeconds(10)
         );
         if (cart.items() == null || cart.items().isEmpty()) {
             throw new RuntimeException("Cart is empty");
@@ -136,7 +143,7 @@ public class CheckoutServiceImpl implements CheckoutService {
         // địa chỉ
         AddressQueryResponse addr = requestReplyClient.request(
                 Topics.CUST_ADDR_REQ, Topics.CUST_ADDR_RESP, AddressQueryResponse.class,
-                corr -> new AddressQueryRequest(corr, Topics.CUST_ADDR_RESP, customerId, request.addressId()), Duration.ofSeconds(3)
+                corr -> new AddressQueryRequest(corr, Topics.CUST_ADDR_RESP, customerId, request.addressId()), Duration.ofSeconds(10)
         );
         AddressDTO a = addr.address();
         if (a == null) throw new RuntimeException("Address not found");
@@ -145,13 +152,13 @@ public class CheckoutServiceImpl implements CheckoutService {
         ShippingRateResponse rate = requestReplyClient.request(
                 Topics.SHIP_RATE_REQ, Topics.SHIP_RATE_RESP, ShippingRateResponse.class,
                 corr -> new ShippingRateRequest(corr, Topics.SHIP_RATE_RESP, a.countryId(), firstNonBlank(a.state(), a.city())),
-                Duration.ofSeconds(3)
+                Duration.ofSeconds(10)
         );
         // snapshot
         List<Integer> ids = cart.items().stream().map(CartLine::productId).toList();
         ProductSnapshotResponse prods = requestReplyClient.request(
                 Topics.CATALOG_PROD_SNAPSHOT_REQ, Topics.CATALOG_PROD_SNAPSHOT_RESP, ProductSnapshotResponse.class,
-                corr -> new ProductSnapshotRequest(corr, Topics.CATALOG_PROD_SNAPSHOT_RESP, ids), Duration.ofSeconds(3)
+                corr -> new ProductSnapshotRequest(corr, Topics.CATALOG_PROD_SNAPSHOT_RESP, ids), Duration.ofSeconds(10)
         );
         Map<Integer, ProductSnapshot> map = prods.products().stream().collect(Collectors.toMap(ProductSnapshot::id, x -> x));
 
@@ -186,12 +193,14 @@ public class CheckoutServiceImpl implements CheckoutService {
         float payment      = round2(paymentF);
 
         // saga
-        OrderSagaState state = new OrderSagaState();
-        state.setOrderNumber(orderNumber);
-        state.setCustomerId(customerId);
-        state.setStatus(OrderSagaState.Status.NEW);
-        state.setUpdatedAt(new Date());
-        store.save(state);
+        // 1) NEW saga
+        saga.createNew(orderNumber, customerId);
+//        OrderSagaState state = new OrderSagaState();
+//        state.setOrderNumber(orderNumber);
+//        state.setCustomerId(customerId);
+//        state.setStatus(OrderSagaState.Status.NEW);
+//        state.setUpdatedAt(new Date());
+//        store.save(state);
 
 //        OrderPlacedEvent evt = new OrderPlacedEvent(
 //                UUID.randomUUID().toString(), orderNumber,
@@ -208,12 +217,14 @@ public class CheckoutServiceImpl implements CheckoutService {
                 me != null ? me.lastName() : null,
                 me != null ? me.phoneNumber() : null
         );
-
+        String countryLabel = (a.countryName() != null && !a.countryName().isBlank())
+                ? a.countryName()
+                : "Unknown";
         AddressSnapshot adr = new AddressSnapshot(
                 a.firstName(), a.lastName(), a.phoneNumber(),
                 a.addressLine1(), a.addressLine2(),
                 a.city(), a.state(), a.postalCode(),
-                a.countryName()
+                countryLabel
         );
 
 
@@ -223,27 +234,32 @@ public class CheckoutServiceImpl implements CheckoutService {
                 new Date(),
                 customerSnapshot,
                 adr,
-                items,                    // reuse danh sách OrderPlacedItem đang build
+                items,
                 productTotal,
                 shippingCost,
                 payment,
                 "COD"
         );
 
-        kafkaTemplate.executeInTransaction(kt -> {
-            kt.send(Topics.ORDER_EVENTS, orderNumber, evt2);
-            kt.send(Topics.CART_CLEAR_CMD, String.valueOf(customerId), new CartClearCommand(customerId));
-            return true;
-        });
+        outbox.enqueue(Topics.ORDER_EVENTS, orderNumber, evt2);                  // sự kiện đặt hàng
+        outbox.enqueue(Topics.CART_CLEAR_CMD, String.valueOf(customerId),
+                new CartClearCommand(customerId));
+        saga.mark(orderNumber, OrderSagaEntity.Status.PUBLISHED, "OrderPlaced enqueued");
 
-        state.setStatus(OrderSagaState.Status.PUBLISHED);
-        state.setUpdatedAt(new Date());
-        store.save(state);
+//        kafkaTemplate.executeInTransaction(kt -> {
+//            kt.send(Topics.ORDER_EVENTS, orderNumber, evt2);
+//            kt.send(Topics.CART_CLEAR_CMD, String.valueOf(customerId), new CartClearCommand(customerId));
+//            return true;
+//        });
+
+//        state.setStatus(OrderSagaState.Status.PUBLISHED);
+//        state.setUpdatedAt(new Date());
+//        store.save(state);
 
         try {
             EmailSettingsResponse mailCfg = requestReplyClient.request(
                     Topics.SETTINGS_EMAIL_REQ, Topics.SETTINGS_EMAIL_RESP, EmailSettingsResponse.class,
-                    corr -> new EmailSettingsRequest(corr, Topics.SETTINGS_EMAIL_RESP), Duration.ofSeconds(3)
+                    corr -> new EmailSettingsRequest(corr, Topics.SETTINGS_EMAIL_RESP), Duration.ofSeconds(10)
             );
             JavaMailSender sender = MailUtil.buildSender(
                     mailCfg.host(), mailCfg.port(), mailCfg.username(), mailCfg.password(),
@@ -256,30 +272,18 @@ public class CheckoutServiceImpl implements CheckoutService {
                     .replace("[[time]]", LocalDateTime.now().toString());
             mailService.sendHtml(sender, mailCfg.mailFrom(), mailCfg.senderName(), customerEmail, subject, body);
         } catch (Exception e) {
-
+            log.error("Send order confirmation email FAILED (orderNumber={}, customerEmail={})", orderNumber, customerEmail, e);
         }
 
-        state.setStatus(OrderSagaState.Status.COMPLETED);
-        state.setUpdatedAt(new Date());
-        store.save(state);
-
-        return new PlaceOrderResponse(true, orderNumber, productTotal, (Boolean.TRUE.equals(rate.codSupported()) ? shippingCost : 0f), payment);
+        saga.mark(orderNumber, OrderSagaEntity.Status.COMPLETED, "Checkout completed");
+        return new PlaceOrderResponse(true, orderNumber, productTotal, shippingCost, payment);
     }
 
     @Override
     public void compensateCancel(String orderNumber, Integer customerId, String reason) {
-        kafkaTemplate.executeInTransaction(kt -> {
-            kt.send(Topics.ORDER_CANCELLED_EVENTS, orderNumber,
-                    new OrderCancelledEvent(UUID.randomUUID().toString(), orderNumber, customerId, reason, new Date()));
-            return true;
-        });
-        OrderSagaState s = store.get(orderNumber);
-        if (s != null) {
-            s.setStatus(OrderSagaState.Status.CANCELLED);
-            s.setNote(reason);
-            s.setUpdatedAt(new Date());
-            store.save(s);
-        }
+        outbox.enqueue(Topics.ORDER_CANCELLED_EVENTS, orderNumber,
+                new OrderCancelledEvent(UUID.randomUUID().toString(), orderNumber, customerId, reason, new Date()));
+        saga.mark(orderNumber, OrderSagaEntity.Status.CANCELLED, reason);
     }
 
     private float unitPrice(Float price, Float discount) {

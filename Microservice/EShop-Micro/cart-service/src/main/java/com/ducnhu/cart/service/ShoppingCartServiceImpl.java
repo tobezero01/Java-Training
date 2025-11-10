@@ -23,10 +23,11 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     private final RequestReplyClient requestReplyClient;
 
     private ProductSnapshot loadProduct(Integer productId) {
-        ProductSnapshotResponse response = requestReplyClient.request(Topics.CATALOG_PROD_SNAPSHOT_REQ,
+        ProductSnapshotResponse response = requestReplyClient.request(
+                Topics.CATALOG_PROD_SNAPSHOT_REQ,
                 Topics.CATALOG_PROD_SNAPSHOT_RESP, ProductSnapshotResponse.class,
                 corr -> new ProductSnapshotRequest(corr, Topics.CATALOG_PROD_SNAPSHOT_RESP, List.of(productId)),
-                Duration.ofSeconds(3));
+                Duration.ofSeconds(50));
 
         if (response.products() == null || response.products().isEmpty()) {
             throw new IllegalArgumentException("Product not found: " + productId);

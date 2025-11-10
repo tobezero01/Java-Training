@@ -1,22 +1,56 @@
 spring:
   application:
     name: shipping-service
+
   config:
-    import: "optional:configserver:"
+    import: "optional:configserver:http://config-server:8888"
   cloud:
     config:
-      discovery:
-        enabled: true
-        service-id: config-server
-  kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
-    consumer:
-      group-id: shipping-service
+      fail-fast: true
+      retry:
+        initial-interval: 1000
+        max-attempts: 20
+
+  # DB — có default để chạy được ngay cả khi thiếu env
   datasource:
-    url: ${DB_URL:jdbc:mysql://localhost:3306/shipping_eshopdb?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC}
-    username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:ducnhu1234}
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://host.docker.internal:3306/eshop_shippingdb?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:ducnhu1234}
     driver-class-name: com.mysql.cj.jdbc.Driver
+
   jpa:
     hibernate:
       ddl-auto: update
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:kafka:9092}
+    consumer:
+      group-id: shipping-service
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: com.ducnhu.common.events.shipping
+        spring.json.use.type.headers: true
+
+  security:
+    jwt:
+      issuer: eshop-auth
+      secret: ${JWT_SECRET:a2VlcC10aGlzLWtleS1wcml2YXRlLWFuZC1hbmQtb25seS1kZXZlbG9wZXItaGF2ZS1wZXJtaXNzaW9uLXRvLWNoYW5nZS1pdC1ub3RpZnktYnktRHVjbmh1YWQ}
+      access-ttl-seconds: 36000
+
+  redis:
+    host: ${SPRING_REDIS_HOST:redis}
+    port: ${SPRING_REDIS_PORT:6379}
+    database: ${SPRING_REDIS_DATABASE:0}
+    password: ${SPRING_REDIS_PASSWORD:}
+
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://eureka:8761/eureka}
+
+# (tuỳ chọn) bật log để soi kết nối DB
+logging:
+  level:
+    com.zaxxer.hikari: DEBUG

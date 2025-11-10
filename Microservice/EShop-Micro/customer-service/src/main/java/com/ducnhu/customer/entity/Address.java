@@ -1,6 +1,5 @@
 package com.ducnhu.customer.entity;
 
-import com.ducnhu.auth.entity.Customer;
 import jakarta.persistence.*;
 
 @Entity

@@ -17,24 +17,25 @@ public class ProductRestController {
     }
 
     @GetMapping("/alias/{alias}")
-    public ResponseEntity<ProductDTO> byAlias(@PathVariable String alias) throws ProductNotFoundException {
+    public ResponseEntity<ProductDTO> byAlias(@PathVariable("alias") String alias) throws ProductNotFoundException {
         return ResponseEntity.ok(productService.getProduct(alias));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ProductDTO> byId(@PathVariable Integer id) throws ProductNotFoundException {
+    public ResponseEntity<ProductDTO> byId(@PathVariable("id") Integer id) throws ProductNotFoundException {
         return ResponseEntity.ok(productService.getProduct(id));
     }
 
     @GetMapping("/by-category/{catId}")
-    public PageResponse<ProductDTO> byCategory(@PathVariable Integer catId, @RequestParam(defaultValue = "1") int page,
-                                               @RequestParam(defaultValue = "name") String sort,
-                                               @RequestParam(defaultValue = "asc") String dir) {
+    public PageResponse<ProductDTO> byCategory(@PathVariable("catId") Integer catId, @RequestParam(name = "page", defaultValue = "1") int page,
+                                               @RequestParam(name = "sort", defaultValue = "name") String sort,
+                                               @RequestParam(name = "dir", defaultValue = "asc") String dir) {
         return productService.listByCategoryPaged(catId, page, sort, dir);
     }
 
     @GetMapping("/search")
-    public PageResponse<ProductDTO> search(@RequestParam String keyword, @RequestParam(defaultValue = "1") int page) {
+    public PageResponse<ProductDTO> search(@RequestParam(name = "keyword") String keyword,
+                                           @RequestParam(name = "page", defaultValue = "1") int page) {
         return productService.search(keyword, page);
     }
 }

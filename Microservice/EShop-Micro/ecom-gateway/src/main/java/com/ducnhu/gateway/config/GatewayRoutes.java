@@ -31,10 +31,10 @@ public class GatewayRoutes {
                 .route("addresses", r -> r.path("/api/addresses/**").uri("lb://customer-service"))
 
                 // REVIEWS
-                .route("reviews", r -> r.path("/api/reviews/**").uri("lb://review-service"))
+                //.route("reviews", r -> r.path("/api/reviews/**").uri("lb://review-service"))
 
                 // GEO
-                .route("geo", r -> r.path("/api/geo/**").uri("lb://geo-service"))
+                //.route("geo", r -> r.path("/api/geo/**").uri("lb://geo-service"))
 
                 .build();
     }

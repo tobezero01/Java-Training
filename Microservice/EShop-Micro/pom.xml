@@ -29,7 +29,6 @@
 
         <module>common-service</module>
         <module>customer-service</module>
-        <module>geo-service</module>
         <module>catalog-service</module>
 
         <module>cart-service</module>
@@ -37,19 +36,19 @@
         <module>shipping-service</module>
 
         <module>settings-service</module>
-        <module>review-service</module>
         <module>payment-service</module>
         <module>order-service</module>
 
     </modules>
     <properties>
         <java.version>17</java.version>
-
+        <maven.compiler.release>17</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <spring-boot.version>3.3.4</spring-boot.version>
         <spring-cloud.version>2023.0.3</spring-cloud.version>
         <jjwt.version>0.11.5</jjwt.version>
         <mysql.version>8.0.33</mysql.version>
-
+        <revision>0.0.1-SNAPSHOT</revision>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -65,17 +64,62 @@
                 <version>${spring-cloud.version}</version>
                 <type>pom</type><scope>import</scope>
             </dependency>
+            <dependency>
+                <groupId>com.ducnhu</groupId>
+                <artifactId>common-service</artifactId>
+                <version>${revision}</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <version>${spring-boot.version}</version>
-            </plugin>
-        </plugins>
+        <pluginManagement>
+            <plugins>
+                <!-- Quan trọng: compiler plugin mới + dùng release=17 -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <version>3.11.0</version>
+                    <configuration>
+                        <release>${maven.compiler.release}</release>
+                        <encoding>${project.build.sourceEncoding}</encoding>
+                    </configuration>
+                </plugin>
+
+                <!-- Test plugin mới, sau này chạy test cho mượt -->
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.2.5</version>
+                </plugin>
+
+                <!-- Spring Boot plugin, centralize version -->
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>${spring-boot.version}</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-enforcer-plugin</artifactId>
+                    <version>3.4.1</version>
+                    <executions>
+                        <execution>
+                            <id>enforce-java</id>
+                            <goals><goal>enforce</goal></goals>
+                            <configuration>
+                                <rules>
+                                    <requireJavaVersion>
+                                        <version>[17,)</version>
+                                    </requireJavaVersion>
+                                </rules>
+                            </configuration>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+
     </build>
 
 </project>

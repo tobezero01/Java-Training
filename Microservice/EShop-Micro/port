@@ -1,0 +1,14 @@
+| Service          | Port |
+| ---------------- | ---- |
+| eureka           | 8761 |
+| config-server    | 8888 |
+| gateway          | 8080 |
+| auth-service     | 9001 |
+| catalog-service  | 9002 |
+| cart-service     | 9003 |
+| customer-service | 9004 |
+| settings-service | 9005 |
+| shipping-service | 9006 |
+| order-service    | 9007 |
+| checkout-service | 9010 |
+| payment-service  | 9011 |

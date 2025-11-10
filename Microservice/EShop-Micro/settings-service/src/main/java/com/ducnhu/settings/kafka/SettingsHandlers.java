@@ -1,5 +1,6 @@
 package com.ducnhu.settings.kafka;
 
+
 import com.ducnhu.common.events.settings.EmailSettingsRequest;
 import com.ducnhu.common.events.settings.EmailSettingsResponse;
 import com.ducnhu.common.events.settings.PaypalSettingsRequest;

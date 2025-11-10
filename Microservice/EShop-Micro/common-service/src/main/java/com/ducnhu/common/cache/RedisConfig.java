@@ -1,5 +1,6 @@
 package com.ducnhu.common.cache;
 
+import com.ducnhu.common.dto.Intent;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -15,6 +16,7 @@ import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactor
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 import java.time.Duration;
@@ -85,4 +87,24 @@ public class RedisConfig {
         template.afterPropertiesSet();
         return template;
     }
+
+    @Bean("intentRedisTemplate")
+    public RedisTemplate<String, Intent> intentRedisTemplate(
+            RedisConnectionFactory cf
+    ) {
+        RedisTemplate<String, Intent> tpl = new RedisTemplate<String, Intent>();
+        tpl.setConnectionFactory(cf);
+
+        StringRedisSerializer keySer = new StringRedisSerializer();
+        Jackson2JsonRedisSerializer valSer = new Jackson2JsonRedisSerializer<>(Intent.class);
+
+        tpl.setKeySerializer(keySer);
+        tpl.setValueSerializer(valSer);
+        tpl.setHashKeySerializer(keySer);
+        tpl.setHashValueSerializer(valSer);
+
+        tpl.afterPropertiesSet();
+        return tpl;
+    }
+
 }

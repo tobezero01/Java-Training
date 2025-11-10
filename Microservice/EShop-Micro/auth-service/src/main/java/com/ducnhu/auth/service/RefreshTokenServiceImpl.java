@@ -7,8 +7,10 @@ import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.Base64;
 import java.util.Optional;
 import java.util.Random;
 
@@ -18,7 +20,7 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     private final RefreshTokenRepository refreshTokenRepository;
 
     private String newOpaqueToken() {
-        return RandomStringUtils.random(64);
+        return RandomStringUtils.randomAlphanumeric(64);
     }
 
     @Override
@@ -53,7 +55,9 @@ public class RefreshTokenServiceImpl implements RefreshTokenService {
     public void revokeAllForUser(Integer customerId) {
         refreshTokenRepository.findAll().stream()
                 .filter(rt -> rt.getCustomerId().equals(customerId) && !rt.isRevoked())
-                .forEach(rt -> { rt.setRevoked(true);
-                    refreshTokenRepository.save(rt); });
+                .forEach(rt -> {
+                    rt.setRevoked(true);
+                    refreshTokenRepository.save(rt);
+                });
     }
 }

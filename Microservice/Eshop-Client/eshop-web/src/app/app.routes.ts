@@ -22,6 +22,8 @@ import { AccessDeniedComponent } from './errors/access-denied/access-denied.comp
 import { NotFoundComponent } from './errors/not-found/not-found.component';
 import { SearchComponent } from './features/catalog/pages/search/search.component';
 import { ProductDetailComponent } from './features/catalog/pages/product-detail/product-detail.component';
+import { AddressListComponent } from './features/address/pages/address-list/address-list.component';
+import { AddressFormComponent } from './features/address/pages/address-form/address-form.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -46,6 +48,11 @@ export const routes: Routes = [
       { path: 'catalog', component: ProductListComponent },
       { path: 'catalog/search', component: SearchComponent },
       { path: 'catalog/p/:alias', component: ProductDetailComponent },
+
+      // Address book (Customer)
+      { path: 'account/addresses', component: AddressListComponent, canActivate: [authGuard] },
+      { path: 'account/addresses/new', component: AddressFormComponent, canActivate: [authGuard] },
+      { path: 'account/addresses/:id/edit', component: AddressFormComponent, canActivate: [authGuard] },
     ]
   },
 

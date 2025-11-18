@@ -1,0 +1,36 @@
+<div class="container py-3">
+  <div class="d-flex align-items-center mb-3">
+    <h3 class="mb-0">Sổ địa chỉ</h3>
+    <button class="btn btn-primary ms-auto" (click)="create()">Thêm địa chỉ</button>
+  </div>
+
+  <div *ngIf="loading" class="alert alert-info">Đang tải...</div>
+  <div *ngIf="!loading && items.length===0" class="alert alert-warning">Chưa có địa chỉ.</div>
+
+  <div class="row g-3">
+    <div class="col-md-6" *ngFor="let a of items">
+      <div class="card h-100 border" [class.border-success]="a.defaultForShipping">
+        <div class="card-body">
+          <div class="d-flex">
+            <div class="flex-grow-1">
+              <div class="fw-semibold">{{a.firstName}} {{a.lastName}}</div>
+              <div class="small text-muted">{{a.phoneNumber}}</div>
+              <div class="mt-1">{{a.addressLine1}} <span *ngIf="a.addressLine2">, {{a.addressLine2}}</span></div>
+              <div>{{a.city}}, {{a.state}} {{a.postalCode}}</div>
+              <div class="small text-muted">Country: {{a.countryName || a.countryId}}</div>
+            </div>
+            <div>
+              <span *ngIf="a.defaultForShipping" class="badge text-bg-success">Mặc định</span>
+            </div>
+          </div>
+        </div>
+        <div class="card-footer d-flex gap-2">
+          <button class="btn btn-outline-secondary btn-sm" (click)="edit(a)">Sửa</button>
+          <button class="btn btn-outline-danger btn-sm" (click)="remove(a)">Xóa</button>
+          <button class="btn btn-outline-primary btn-sm ms-auto" *ngIf="!a.defaultForShipping"
+            (click)="setDefault(a)">Đặt mặc định</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

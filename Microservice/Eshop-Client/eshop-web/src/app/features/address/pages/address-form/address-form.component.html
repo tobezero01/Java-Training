@@ -1,0 +1,55 @@
+<div class="container py-3">
+  <h3 class="mb-3">{{ id ? 'Sửa địa chỉ' : 'Thêm địa chỉ' }}</h3>
+
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">First name</label>
+        <input class="form-control" formControlName="firstName">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Last name</label>
+        <input class="form-control" formControlName="lastName">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Phone</label>
+        <input class="form-control" formControlName="phoneNumber">
+      </div>
+      <div class="col-12">
+        <label class="form-label">Address line 1</label>
+        <input class="form-control" formControlName="addressLine1">
+      </div>
+      <div class="col-12">
+        <label class="form-label">Address line 2</label>
+        <input class="form-control" formControlName="addressLine2">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">City</label>
+        <input class="form-control" formControlName="city">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">State</label>
+        <input class="form-control" formControlName="state">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Postal code</label>
+        <input class="form-control" formControlName="postalCode">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Country ID</label>
+        <input type="number" class="form-control" formControlName="countryId">
+      </div>
+      <div class="col-12">
+        <div class="form-check">
+          <input type="checkbox" class="form-check-input" id="def" formControlName="defaultForShipping">
+          <label class="form-check-label" for="def">Đặt làm địa chỉ mặc định</label>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-3 d-flex gap-2">
+      <button class="btn btn-primary" type="submit" [disabled]="saving || form.invalid">Lưu</button>
+      <button class="btn btn-secondary" type="button" (click)="cancel()">Hủy</button>
+    </div>
+  </form>
+</div>

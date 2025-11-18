@@ -24,5 +24,13 @@ export const API = {
       `/api/products/by-category/${catId}?page=${page}&sort=${sort}&dir=${dir}`,
     SEARCH:    (keyword: string, page=1) =>
       `/api/products/search?keyword=${encodeURIComponent(keyword)}&page=${page}`,
+  },
+  CART: {
+    ROOT: '/api/cart',
+    ITEMS: '/api/cart/items'
+  },
+  ADDRESSES: {
+    ROOT: '/api/addresses',
+    DEFAULT: '/api/addresses/default'
   }
 }

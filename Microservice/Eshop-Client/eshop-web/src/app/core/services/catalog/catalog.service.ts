@@ -31,7 +31,6 @@ export class CatalogService {
   getCategoryParents(id: number): Promise<CategoryDto[]> {
     return firstValueFrom(this.http.get<CategoryDto[]>(`${this.base}${API.CATEGORIES.PARENTS(id)}`));
   }
-
   // PRODUCTS
   getProductById(id: number): Promise<ProductDto> {
     return firstValueFrom(this.http.get<ProductDto>(`${this.base}${API.PRODUCTS.BY_ID(id)}`));

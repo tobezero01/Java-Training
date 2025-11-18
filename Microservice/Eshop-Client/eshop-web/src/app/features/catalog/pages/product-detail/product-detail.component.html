@@ -24,7 +24,7 @@
       <p class="mb-3" *ngIf="p()?.shortDescription">{{ p()?.shortDescription }}</p>
 
       <div class="d-flex gap-2">
-        <button class="btn btn-primary btn-sm" (click)="addToCart()">Thêm vào giỏ</button>
+        <button class="btn btn-primary btn-sm" (click)="addToCart(p()!.id)">Thêm vào giỏ</button>
         <button class="btn btn-success btn-sm" (click)="buyNow()">Mua ngay</button>
         <a class="btn btn-outline-secondary btn-sm" [routerLink]="['/catalog']"
           [queryParams]="{catId: p()?.categoryId}">

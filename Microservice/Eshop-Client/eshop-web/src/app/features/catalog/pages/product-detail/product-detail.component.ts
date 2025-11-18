@@ -6,6 +6,7 @@ import { CatalogService } from '../../../../core/services/catalog/catalog.servic
 import { ProductDto } from '../../models/product-dto.model';
 import { CategoryDto } from '../../models/category-dto.model';
 import { ToastrService } from 'ngx-toastr';
+import { CartService } from '../../../../core/services/cart/cart.service';
 
 @Component({
   selector: 'app-product-detail',
@@ -19,6 +20,7 @@ export class ProductDetailComponent implements OnInit {
   private ar = inject(ActivatedRoute);
   private toastr = inject(ToastrService);
   private router = inject(Router);
+  private cart = inject(CartService);
 
   p = signal<ProductDto | null>(null);
   crumbs = signal<CategoryDto[]>([]);
@@ -34,9 +36,12 @@ export class ProductDetailComponent implements OnInit {
     }
   }
 
-  addToCart() {
-    // TODO: API ở đây
-    this.toastr.success('Đã thêm vào giỏ (demo). Sẽ kết nối giỏ hàng ở module Cart.');
+  addToCart(prodId: number, qty = 1) {
+    if (qty < 1) qty = 1;
+    if (qty > 10) qty = 10; // clamp UI; server cũng clamp
+    this.cart.addItem({ productId: prodId, quantity: qty }).subscribe({
+    next: () => this.toastr.success('Đã thêm vào giỏ'),
+    });
   }
 
   buyNow() {

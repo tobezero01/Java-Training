@@ -1,0 +1,21 @@
+<div class="card h-100">
+  <img class="card-img-top" [src]="p.mainImagePath || 'https://via.placeholder.com/400x300?text=No+Image'"
+    [alt]="p.name">
+
+  <div class="card-body">
+    <h6 class="card-title mb-1">{{ p?.name }}</h6>
+    <p class="card-text small text-muted" *ngIf="p.shortDescription">
+      {{ p.shortDescription }}
+    </p>
+
+    <div class="fw-bold mb-1">
+      {{ p.price | currency:'USD':'symbol':'1.0-0' }}
+    </div>
+
+    <div class="small text-warning" *ngIf="p.averageRating">
+      ★ {{ p.averageRating }} <span class="text-muted">({{ p.reviewCount || 0 }})</span>
+    </div>
+
+    <a class="stretched-link" [routerLink]="['/catalog/p', p.alias]"></a>
+  </div>
+</div>

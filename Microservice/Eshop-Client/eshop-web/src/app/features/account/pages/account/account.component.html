@@ -1,1 +1,53 @@
-<p>account works!</p>
+<div class="container py-4">
+  <h4 class="mb-3">Hồ sơ cá nhân</h4>
+
+  <form [formGroup]="form" (ngSubmit)="save()">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Họ</label>
+        <input class="form-control" formControlName="firstName">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Tên</label>
+        <input class="form-control" formControlName="lastName">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Điện thoại</label>
+        <input class="form-control" formControlName="phone">
+      </div>
+
+      <div class="col-12">
+        <label class="form-label">Địa chỉ</label>
+        <input class="form-control mb-2" placeholder="Địa chỉ dòng 1" formControlName="addressLine1">
+        <input class="form-control" placeholder="Địa chỉ dòng 2 (tuỳ chọn)" formControlName="addressLine2">
+      </div>
+
+      <div class="col-md-4">
+        <label class="form-label">Thành phố</label>
+        <input class="form-control" formControlName="city">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Tỉnh/Bang</label>
+        <input class="form-control" formControlName="state">
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Mã bưu chính</label>
+        <input class="form-control" formControlName="postalCode">
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label">Country code</label>
+        <input class="form-control" formControlName="countryCode" placeholder="VD: VN, US">
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Country ID</label>
+        <input class="form-control" type="number" formControlName="countryId" placeholder="hoặc nhập ID quốc gia">
+      </div>
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+      <button class="btn btn-primary" [disabled]="form.invalid || loading">Lưu thay đổi</button>
+      <button class="btn btn-outline-secondary" type="button" (click)="reload()">Tải lại</button>
+    </div>
+  </form>
+</div>

@@ -17,6 +17,11 @@ import { AccountComponent } from './features/account/pages/account/account.compo
 
 // Errors
 import { ServerErrorComponent } from './errors/server-error/server-error.component';
+import { authGuard } from './core/guards/auth.guard';
+import { AccessDeniedComponent } from './errors/access-denied/access-denied.component';
+import { NotFoundComponent } from './errors/not-found/not-found.component';
+import { SearchComponent } from './features/catalog/pages/search/search.component';
+import { ProductDetailComponent } from './features/catalog/pages/product-detail/product-detail.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -33,15 +38,21 @@ export const routes: Routes = [
       // FEATURES (không lazy; trực tiếp path + component)
       { path: 'catalog', component: ProductListComponent },
       { path: 'cart', component: CartComponent },
-      { path: 'checkout', component: CheckoutComponent },
-      { path: 'orders', component: OrdersComponent },
-      { path: 'account', component: AccountComponent },
+      { path: 'checkout', component: CheckoutComponent , canActivate: [authGuard]},
+      { path: 'orders', component: OrdersComponent , canActivate: [authGuard]},
+      { path: 'account', component: AccountComponent, canActivate: [authGuard] },
+
+      // CATALOG
+      { path: 'catalog', component: ProductListComponent },
+      { path: 'catalog/search', component: SearchComponent },
+      { path: 'catalog/p/:alias', component: ProductDetailComponent },
     ]
   },
 
-  // Lỗi 500 (tùy chọn)
-  { path: '500', component: ServerErrorComponent },
-
+  { path: 'not-found', component: NotFoundComponent },
+  { path: 'access-denied', component: AccessDeniedComponent },
+  { path: 'server-error', component: ServerErrorComponent },
+  { path: '**', redirectTo: 'not-found' }
   // Cuối cùng: wildcard -> /login
-  { path: '**', redirectTo: 'login' }
+  //{ path: '**', redirectTo: 'login' }
 ];

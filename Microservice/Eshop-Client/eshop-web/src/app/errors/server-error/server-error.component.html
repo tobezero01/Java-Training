@@ -1,1 +1,32 @@
-<p>server-error works!</p>
+<div class="bg-white p-8 rounded shadow-md">
+  <h2 class="text-2xl font-semibold text-red-600 mb-4">Internal Server Error</h2>
+
+  <ng-container *ngIf="error">
+    <h3 class="text-lg text-red-500 font-semibold mb-2">Error: {{ error.message }}</h3>
+
+    <p class="text-gray-700 font-medium mb-4">
+      <strong>Note:</strong> If you are seeing this error, then Angular is not to blame!
+    </p>
+
+    <div class="mb-4">
+      <p class="text-gray-800 font-semibold">What to do next?</p>
+      <ol class="list-decimal list-inside text-gray-700 space-y-1 mt-2">
+        <li>Open Chrome DevTools and check the failing network request in the Network tab.</li>
+        <li>Examine the URL of the failing request.</li>
+        <li>Reproduce the error in Postman – if it fails there too, it's not Angular’s fault.</li>
+      </ol>
+    </div>
+
+    <p class="text-gray-800 font-medium mb-2">
+      <strong>Stack Trace:</strong> Check the first 2 lines to identify the exact cause.
+    </p>
+
+    <pre class="bg-gray-100 text-sm p-4 rounded overflow-auto max-h-96 whitespace-pre-wrap">
+{{ error.details }}
+    </pre>
+  </ng-container>
+  <a routerLink=""
+    class="inline-block bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded shadow transition duration-200">
+    Go to Home
+  </a>
+</div>

@@ -1,0 +1,38 @@
+<ng-container *ngIf="p(); else loading">
+  <nav class="mb-2" *ngIf="crumbs().length">
+    <ol class="breadcrumb">
+      <li class="breadcrumb-item" *ngFor="let c of crumbs()">
+        <a [routerLink]="['/catalog']" [queryParams]="{catId: c.id}">{{c.name}}</a>
+      </li>
+    </ol>
+  </nav>
+
+  <div class="row g-3">
+    <div class="col-md-5">
+      <img class="img-fluid border rounded"
+        [src]="p()?.mainImagePath || 'https://via.placeholder.com/600x400?text=No+Image'" [alt]="p()?.name">
+    </div>
+    <div class="col-md-7">
+      <h4 class="mb-2">{{ p()?.name }}</h4>
+      <div class="text-muted mb-2">#{{ p()?.alias }}</div>
+      <div class="fs-5 fw-bold mb-2">
+        {{ p()?.price | currency:'USD':'symbol':'1.0-0' }}
+      </div>
+      <div class="small text-warning mb-2" *ngIf="p()?.averageRating">
+        ★ {{ p()?.averageRating }} <span class="text-muted">({{ p()?.reviewCount || 0 }})</span>
+      </div>
+      <p class="mb-3" *ngIf="p()?.shortDescription">{{ p()?.shortDescription }}</p>
+
+      <div class="d-flex gap-2">
+        <button class="btn btn-primary btn-sm" (click)="addToCart()">Thêm vào giỏ</button>
+        <button class="btn btn-success btn-sm" (click)="buyNow()">Mua ngay</button>
+        <a class="btn btn-outline-secondary btn-sm" [routerLink]="['/catalog']"
+          [queryParams]="{catId: p()?.categoryId}">
+          Quay lại danh mục
+        </a>
+      </div>
+    </div>
+  </div>
+</ng-container>
+
+<ng-template #loading>Đang tải...</ng-template>

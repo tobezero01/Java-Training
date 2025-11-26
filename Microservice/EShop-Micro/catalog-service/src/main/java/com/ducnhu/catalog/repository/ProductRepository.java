@@ -1,6 +1,7 @@
 package com.ducnhu.catalog.repository;
 
 import com.ducnhu.catalog.entity.product.Product;
+import com.ducnhu.catalog.minio.projection.ProductExportView;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -13,6 +14,24 @@ import java.util.Collection;
 import java.util.List;
 
 public interface ProductRepository extends JpaRepository<Product, Integer> {
+
+    @Query("""
+            select p.id as id, p.name as name, p.alias as alias, p.price as price,
+                      p.discountPrice as discountPrice, p.inStock as inStock,
+                      p.averageRating as averageRating, p.reviewCount as reviewCount,
+                      p.createdTime as createdTime, c.name as categoryName
+            from Product p left join p.category c
+            where (:afterId is null or p.id > :afterId)
+            order by p.id asc
+            """)
+    List<ProductExportView> scanAfterId(@Param("afterId") Integer afterId, Pageable pageable);
+
+    /** Lấy min/max id để chia range nếu muốn chạy nhiều worker */
+    @Query("select min(p.id) from Product p")
+    Integer minId();
+
+    @Query("select max(p.id) from Product p")
+    Integer maxId();
 
     @Query("""
                 SELECT p

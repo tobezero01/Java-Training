@@ -1,0 +1,21 @@
+{
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "alias": {
+      "type": "keyword"
+    },
+    "aliasNgram": {
+      "type": "text",
+      "analyzer": "alias_ngram",
+      "search_analyzer": "standard"
+    },
+    "name": {
+      "type": "text"
+    },
+    "categoryName": {
+      "type": "keyword"
+    }
+  }
+}

@@ -1,0 +1,25 @@
+<div class="modal-header">
+  <h5 class="modal-title">Chọn địa chỉ</h5>
+  <button type="button" class="btn-close" (click)="active.dismiss()"></button>
+</div>
+
+<div class="modal-body">
+  <div *ngIf="loading" class="alert alert-info">Đang tải...</div>
+  <div class="list-group" *ngIf="!loading">
+    <button class="list-group-item list-group-item-action" *ngFor="let a of items" (click)="choose(a)">
+      <div class="d-flex">
+        <div class="flex-grow-1">
+          <div class="fw-semibold">{{a.firstName}} {{a.lastName}} — {{a.phoneNumber}}</div>
+          <div class="small">{{a.addressLine1}} <span *ngIf="a.addressLine2">, {{a.addressLine2}}</span></div>
+          <div class="small text-muted">{{a.city}}, {{a.state}} {{a.postalCode}} — {{a.countryName || a.countryId}}
+          </div>
+        </div>
+        <span class="badge text-bg-success align-self-center" *ngIf="a.defaultForShipping">Mặc định</span>
+      </div>
+    </button>
+  </div>
+</div>
+
+<div class="modal-footer">
+  <button class="btn btn-secondary" (click)="active.dismiss()">Đóng</button>
+</div>

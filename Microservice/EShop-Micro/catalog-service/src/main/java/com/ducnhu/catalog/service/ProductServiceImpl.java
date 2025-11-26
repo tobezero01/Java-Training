@@ -1,6 +1,7 @@
 package com.ducnhu.catalog.service;
 
 import com.ducnhu.catalog.dto.ProductDTO;
+import com.ducnhu.catalog.elastic.ProductAliasResolver;
 import com.ducnhu.catalog.entity.product.Product;
 import com.ducnhu.catalog.helper.ProductFilter;
 import com.ducnhu.catalog.mapper.ProductMapper;
@@ -33,6 +34,8 @@ public class ProductServiceImpl implements ProductService {
     private final ProductThinPagingService productThinPagingService;
     private final ProductIndexService productIndexService;
     private final StringRedisTemplate redisTemplate;
+    private final ProductAliasResolver aliasResolver;
+
     /**
      * (Cảnh báo) Với category cực lớn, phương thức này vẫn tốn bộ nhớ; ưu tiên dùng listByCategoryPaged
      */
@@ -105,10 +108,12 @@ public class ProductServiceImpl implements ProductService {
 //        // LƯU Ý: CacheKey.productByAlias(alias) đang lưu DTO, KHÔNG lưu entity
 //        return dto;
         // 1) Tra alias->id (nếu __NULL__ -> 404 nhanh)
-        Integer id = productIndexService.resolveAlias(alias);
-        if (id != null) {
-            return getProduct(id); // tái sử dụng get-by-id (đã tối ưu bitmap + cache item)
-        }
+//        Integer id = productIndexService.resolveAlias(alias);
+//        if (id != null) {
+//            return getProduct(id); // tái sử dụng get-by-id (đã tối ưu bitmap + cache item)
+//        }
+        Integer id = aliasResolver.resolveId(alias);  // <-- ProductAliasResolver
+        if (id != null) return getProduct(id);
 
         // 2) Chưa có mapping -> đánh DB 1 lần
         Product p = productRepository.findByAlias(alias);

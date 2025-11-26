@@ -12,4 +12,10 @@ import { ProductDto } from '../../models/product-dto.model';
 })
 export class ProductCardComponent {
   @Input() p!: ProductDto;
+
+  onImgError(event: Event) {
+    const img = event.target as HTMLImageElement;
+    img.onerror = null;                    // tránh loop nếu image.png cũng lỗi
+    img.src = 'assets/image.png';
+  }
 }

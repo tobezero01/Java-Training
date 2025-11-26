@@ -32,5 +32,19 @@ export const API = {
   ADDRESSES: {
     ROOT: '/api/addresses',
     DEFAULT: '/api/addresses/default'
+  },
+  CHECKOUT: {
+    SUMMARY: (addressId?: number) =>
+      addressId ? `/api/checkout/summary?addressId=${addressId}` : `/api/checkout/summary`,
+    PLACE_ORDER: `/api/checkout/place-order`,
+    CANCEL_ORDER: (orderNumber: string, reason = 'User requested') =>
+      `/api/checkout/cancel-order?orderNumber=${encodeURIComponent(orderNumber)}&reason=${encodeURIComponent(reason)}`
+  },
+  PAYMENTS: {
+    PAYPAL: {
+      CREATE: `/api/payments/paypal/create`,    // POST x-www-form-urlencoded: addressId, returnUrl, cancelUrl
+      CAPTURE: `/api/payments/paypal/capture`,  // POST: paypalOrderId, orderNumber
+      CANCEL: `/api/payments/paypal/cancel`     // POST: orderNumber, (optional) paypalOrderId, reason
+    }
   }
 }

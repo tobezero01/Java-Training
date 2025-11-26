@@ -36,8 +36,12 @@
       <div class="row row-cols-2 row-cols-md-3 g-3">
         <div class="col" *ngFor="let c of topCats()">
           <div class="card h-100" (click)="goCat(c.id)" style="cursor:pointer">
-            <img class="card-img-top" [src]="c.imagePath || 'https://via.placeholder.com/400x250?text=Category'"
-              [alt]="c.name">
+            <!-- <img class="card-img-top" [src]="c.imagePath
+        ? 'assets/category-images/' + c.id + '/' + c.imagePath
+        : 'assets/image.png'" [alt]="c.name" /> -->
+            <img class="card-img-top" [src]="c.imagePath
+                          ? 'assets/category-images/' + c.id + '/' + c.imagePath
+                          : 'assets/image.png'" [alt]="c.name" />
             <div class="card-body text-center">
               <div class="fw-semibold">{{ c.name }}</div>
             </div>
@@ -53,8 +57,9 @@
         <div class="d-flex flex-wrap gap-2">
           <div class="card p-2 flex-grow-0 flex-shrink-0" style="width: 140px; cursor: pointer"
             *ngFor="let c of childCats()" (click)="goCat(c.id)">
-            <img class="card-img-top" [src]="c.imagePath || 'https://via.placeholder.com/140x80?text=Category'"
-              [alt]="c.name">
+            <img class="card-img-top" [src]="c.imagePath
+                                      ? 'assets/category-images/' + c.id + '/' + c.imagePath
+                                      : 'assets/image.png'" [alt]="c.name" />
             <div class="small text-center mt-1">{{ c.name }}</div>
           </div>
         </div>
@@ -66,6 +71,8 @@
           <app-product-card [p]="p"></app-product-card>
         </div>
       </div>
+
+
 
       <!-- Pagination -->
       <nav class="mt-3" *ngIf="totalPages() > 1">

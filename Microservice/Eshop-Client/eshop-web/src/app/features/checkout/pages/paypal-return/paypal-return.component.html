@@ -1,0 +1,15 @@
+<div class="container py-5">
+  <div *ngIf="loading" class="alert alert-info">Đang xác nhận thanh toán PayPal...</div>
+  <div *ngIf="!loading && ok" class="alert alert-success">
+    Thanh toán PayPal thành công. Vui lòng kiểm tra email xác nhận đơn hàng.
+    <div class="mt-3">
+      <a routerLink="/orders" class="btn btn-success btn-sm">Tới trang đơn hàng</a>
+    </div>
+  </div>
+  <div *ngIf="!loading && !ok" class="alert alert-danger">
+    Không thể xác nhận thanh toán. Vui lòng thử lại hoặc liên hệ hỗ trợ.
+    <div class="mt-3">
+      <a routerLink="/checkout" class="btn btn-outline-secondary btn-sm">Quay lại Checkout</a>
+    </div>
+  </div>
+</div>

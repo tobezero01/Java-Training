@@ -3,7 +3,7 @@
     <a [routerLink]="['/catalog']" [queryParams]="{catId: c.id}">
       {{ c.name }}
     </a>
-    <app-category-tree *ngIf="c.children?.length" [tree]="c.children" class="ms-3 mt-1 d-block">
+    <app-category-tree *ngIf="c.children.length" [tree]="c.children" class="ms-3 mt-1 d-block">
     </app-category-tree>
   </li>
 </ul>

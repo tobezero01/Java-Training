@@ -1,0 +1,9 @@
+<div class="container py-5">
+  <div class="alert alert-warning">
+    Bạn đã hủy thanh toán trên PayPal.
+    <div class="small">Mã đơn (nếu có): {{ orderNumber || '(không có)' }}</div>
+    <div class="mt-3">
+      <a routerLink="/checkout" class="btn btn-outline-secondary btn-sm">Quay lại Checkout</a>
+    </div>
+  </div>
+</div>

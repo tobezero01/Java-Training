@@ -1,12 +1,9 @@
 <div class="card h-100">
-  <img class="card-img-top" [src]="p.mainImagePath || 'https://via.placeholder.com/400x300?text=No+Image'"
-    [alt]="p.name">
+  <img class="card-img-top" [src]="p.mainImagePath ? 'assets' + p.mainImagePath : 'assets/image.png'" [alt]="p.name"
+    (error)="onImgError($event)" />
 
   <div class="card-body">
-    <h6 class="card-title mb-1">{{ p?.name }}</h6>
-    <p class="card-text small text-muted" *ngIf="p.shortDescription">
-      {{ p.shortDescription }}
-    </p>
+    <h6 class="card-title mb-1">{{ p.name }}</h6>
 
     <div class="fw-bold mb-1">
       {{ p.price | currency:'USD':'symbol':'1.0-0' }}

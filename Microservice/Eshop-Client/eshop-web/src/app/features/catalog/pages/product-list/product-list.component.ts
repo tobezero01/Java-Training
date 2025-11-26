@@ -11,7 +11,7 @@ import { CategoryNodeDto } from '../../models/category-node-dto.model';
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [ProductCardComponent, CategoryTreeComponent,CommonModule, RouterLink],
+  imports: [ProductCardComponent, CategoryTreeComponent,CommonModule],
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.css'
 })
@@ -58,7 +58,7 @@ export class ProductListComponent implements OnInit{
         this.selectedCat.set(null);
         this.childCats.set([]);
         const res = await this.catalogService.searchProducts(kw, page);
-        this.items.set(res.items);
+        this.items.set(res.content);
         this.totalPages.set(res.totalPages);
         this.page.set(clampPage(res.page, res.totalPages));
         return;
@@ -67,7 +67,7 @@ export class ProductListComponent implements OnInit{
       if (catId) {
         this.setSelectedAndChildren(catId);
         const res = await this.catalogService.listProductsByCategory(catId, page, s, d);
-        this.items.set(res.items);
+        this.items.set(res.content);
         this.totalPages.set(res.totalPages);
         this.page.set(clampPage(res.page, res.totalPages));
         return;

@@ -3,5 +3,5 @@ export interface PageResponse<T> {
   size: number;      // kích thước trang
   total: number;     // tổng số bản ghi
   totalPages: number;
-  items: T[];
+  content: T[];
 }

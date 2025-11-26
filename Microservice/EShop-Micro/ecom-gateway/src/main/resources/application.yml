@@ -13,9 +13,15 @@ spring:
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://eureka:8761/eureka
 management:
   endpoints:
     web:
       exposure:
         include: health,env,info
+cors:
+  allowed-origins: "http://localhost:4200"
+  allowed-methods: "GET,POST,PUT,DELETE,PATCH,OPTIONS"
+  allowed-headers: "Content-Type,Authorization,X-Requested-With"
+  allow-credentials: true
+

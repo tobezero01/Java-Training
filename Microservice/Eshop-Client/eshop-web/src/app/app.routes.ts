@@ -24,6 +24,9 @@ import { SearchComponent } from './features/catalog/pages/search/search.componen
 import { ProductDetailComponent } from './features/catalog/pages/product-detail/product-detail.component';
 import { AddressListComponent } from './features/address/pages/address-list/address-list.component';
 import { AddressFormComponent } from './features/address/pages/address-form/address-form.component';
+import { PaypalReturnComponent } from './features/checkout/pages/paypal-return/paypal-return.component';
+import { PaypalCancelComponent } from './features/checkout/pages/paypal-cancel/paypal-cancel.component';
+import { PaypalSuccessComponent } from './features/checkout/pages/paypal-success/paypal-success.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'login', pathMatch: 'full' },
@@ -53,6 +56,11 @@ export const routes: Routes = [
       { path: 'account/addresses', component: AddressListComponent, canActivate: [authGuard] },
       { path: 'account/addresses/new', component: AddressFormComponent, canActivate: [authGuard] },
       { path: 'account/addresses/:id/edit', component: AddressFormComponent, canActivate: [authGuard] },
+
+      { path: 'checkout', component: CheckoutComponent, canActivate: [authGuard] },
+      { path: 'payment/paypal/return', component: PaypalReturnComponent, canActivate: [authGuard] },
+      { path: 'payment/paypal/cancel', component: PaypalCancelComponent, canActivate: [authGuard] },
+      { path: 'payment/paypal/success', component: PaypalSuccessComponent, canActivate: [authGuard] },
     ]
   },
 

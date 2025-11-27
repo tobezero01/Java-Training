@@ -45,4 +45,14 @@ export class OrdersComponent implements OnInit {
   goDetail(o: OrderSummary) {
     this.router.navigate(['/orders', o.orderNumber]);
   }
+
+  // Thêm hàm này vào class component
+  getStatusClass(status: string): string {
+    const s = status?.toLowerCase() || '';
+    if (s.includes('new') || s.includes('pending')) return 'bg-info-subtle';
+    if (s.includes('ship')) return 'bg-warning-subtle';
+    if (s.includes('complete') || s.includes('delivered')) return 'bg-success-subtle';
+    if (s.includes('cancel')) return 'bg-danger-subtle';
+    return 'bg-secondary-subtle';
+  }
 }

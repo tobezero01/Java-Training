@@ -34,4 +34,17 @@ export class OrderDetailComponent implements OnInit {
       complete: () => this.loading = false
     });
   }
+
+  // Trong class component
+  getStatusClass(status: string): string {
+    // Chuẩn hóa status về chữ thường để so sánh
+    const s = status?.toLowerCase() || '';
+
+    if (s.includes('new') || s.includes('pending')) return 'bg-info-subtle text-info border border-info-subtle';
+    if (s.includes('ship')) return 'bg-warning-subtle text-warning border border-warning-subtle';
+    if (s.includes('complete') || s.includes('delivered')) return 'bg-success-subtle text-success border border-success-subtle';
+    if (s.includes('cancel')) return 'bg-danger-subtle text-danger border border-danger-subtle';
+
+    return 'bg-secondary-subtle text-secondary'; // Mặc định
+  }
 }

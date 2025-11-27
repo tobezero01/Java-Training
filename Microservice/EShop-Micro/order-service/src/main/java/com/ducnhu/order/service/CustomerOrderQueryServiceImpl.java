@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -28,17 +29,27 @@ public class CustomerOrderQueryServiceImpl implements CustomerOrderQueryService 
         Page<Order> p = orderRepository.findByCustomerIdOrderByOrderTimeDesc(customerId, pr);
 
         List<OrderSummaryDTO> items = p.getContent().stream()
-                .map(o -> new OrderSummaryDTO(
-                        o.getOrderNumber(),
-                        o.getOrderTime(),
-                        o.getStatus().toString(),              // tuỳ enum / string trong entity
-                        o.getPaymentMethod().toString(),
-                        o.getOrderDetails().size(),
-                        o.getProductCost(),
-                        o.getShippingCost(),
-                        o.getTotal()
-                ))
+                .map(o -> {
+                    List<OrderDetail> details = o.getOrderDetails();
+                    float productTotal = (float) details.stream()
+                            .mapToDouble(OrderDetail::getSubtotal)
+                            .sum();
+                    float shippingTotal = (float) details.stream()
+                            .mapToDouble(OrderDetail::getShippingCost)
+                            .sum();
+                    return new OrderSummaryDTO(
+                            o.getOrderNumber(),
+                            o.getOrderTime(),
+                            o.getStatus().toString(),
+                            o.getPaymentMethod().toString(),
+                            details.size(),
+                            productTotal,
+                            shippingTotal,
+                            o.getTotal()
+                    );
+                })
                 .toList();
+
 
         return PageResponse.of(items, p.getNumber() + 1, p.getSize(), p.getTotalElements(), p.getTotalPages());
     }
@@ -48,20 +59,39 @@ public class CustomerOrderQueryServiceImpl implements CustomerOrderQueryService 
         Order o = orderRepository.findByOrderNumberAndCustomerId(orderNumber, customerId)
                 .orElse(null);
         if (o == null) return null;
+        List<OrderDetail> details = o.getOrderDetails();
 
         List<OrderItemDTO> items = o.getOrderDetails().stream()
                 .map(this::mapItem)
                 .toList();
 
-        String addr = o.getAddressLine1(); // nếu entity tách nhiều trường, ở đây anh ghép lại chuỗi.
+        String addr = java.util.stream.Stream.of(
+                        (o.getFirstName() + " " + o.getLastName()).trim(),
+                        o.getAddressLine1(),
+                        o.getAddressLine2(),
+                        o.getCity(),
+                        o.getState(),
+                        o.getPostalCode(),
+                        o.getCountry()
+                )
+                .filter(s -> s != null && !s.isBlank())
+                .collect(Collectors.joining(", "));
+
+        float productTotal = (float) details.stream()
+                .mapToDouble(OrderDetail::getSubtotal)
+                .sum();
+
+        float shippingTotal = (float) details.stream()
+                .mapToDouble(OrderDetail::getShippingCost)
+                .sum();
 
         return new OrderDetailDTO(
                 o.getOrderNumber(),
                 o.getOrderTime(),
                 o.getStatus().toString(),
                 o.getPaymentMethod().toString(),
-                o.getProductCost(),
-                o.getShippingCost(),
+                productTotal,
+                shippingTotal,
                 o.getTotal(),
                 addr,
                 items

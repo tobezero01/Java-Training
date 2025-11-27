@@ -23,7 +23,7 @@ public class AddressServiceImpl implements AddressService {
     private final RedisCacheService cache;
     private final CountryRepository countryRepository;
 
-    public AddressServiceImpl(AddressRepository r, RedisCacheService c,  CountryRepository countryRepository) {
+    public AddressServiceImpl(AddressRepository r, RedisCacheService c, CountryRepository countryRepository) {
         this.repo = r;
         this.cache = c;
         this.countryRepository = countryRepository;
@@ -42,6 +42,14 @@ public class AddressServiceImpl implements AddressService {
             a.setCountryName(c.name());
         }
         repo.save(a);
+        String key = CacheKey.addrById(a.getCustomerId(), a.getId());
+        cache.evict(key);
+
+        // 2. Nếu địa chỉ này là mặc định, xóa luôn cache mặc định cho chắc
+        if (a.isDefaultForShipping()) {
+            String defaultKey = CacheKey.addrDefault(a.getCustomerId());
+            cache.evict(key);
+        }
     }
 
     @Override
@@ -72,7 +80,7 @@ public class AddressServiceImpl implements AddressService {
 
     public CountryDTO findById(Integer id) {
         Country country = countryRepository.findById(id).orElse(null);
-        return (country==null)? null : new CountryDTO(country.getId(),
+        return (country == null) ? null : new CountryDTO(country.getId(),
                 country.getName(), country.getCode());
     }
 }

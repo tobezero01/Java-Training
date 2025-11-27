@@ -25,6 +25,8 @@ export class CheckoutComponent implements OnInit {
   private fb = inject(FormBuilder);
 
   loading = false;
+
+  // Dùng signal là tốt, nhưng cần đảm bảo template bind vào summary()
   summary = signal<CheckoutSummary | null>(null);
 
   // Chọn phương thức: COD | PAYPAL
@@ -34,39 +36,64 @@ export class CheckoutComponent implements OnInit {
     note: ['']
   });
 
-  async ngOnInit() {
-    // Multi-promise: lấy summary theo default address (server tự hiểu) – Promise 'đa luồng'
+  ngOnInit() {
     this.reloadSummary();
   }
 
   reloadSummary(addressId?: number) {
     this.loading = true;
+
+    // Nếu addressId không truyền vào (lần đầu load), dùng null/undefined để server lấy default
     this.checkout.summary(addressId).subscribe({
       next: (s) => {
+        console.log('New Summary Loaded:', s); // Debug xem dữ liệu mới về chưa
+
+        // 1. Cập nhật Signal để template render lại
         this.summary.set(s);
-        // set addressId form
-        this.form.patchValue({ addressId: s.addressId || 0 });
-        // Nếu shippingSupported=false => disable COD
-        if (!s.shippingSupported && this.form.controls.method.value === 'COD') {
-          this.form.controls.method.setValue('PAYPAL');
+
+        // 2. Đồng bộ Form Control
+        this.form.patchValue({ addressId: s.addressId });
+
+        // 3. Xử lý logic Payment Method (Quan trọng)
+        const currentMethod = this.form.controls.method.value;
+
+        if (!s.shippingSupported) {
+          // Nếu địa chỉ mới KHÔNG hỗ trợ ship -> Disable COD, chuyển sang Paypal
+          if (currentMethod === 'COD') {
+            this.form.controls.method.setValue('PAYPAL');
+            this.toast.info('Địa chỉ này chưa hỗ trợ COD, đã chuyển sang thanh toán PayPal.');
+          }
+          // Disable control COD trong form (nếu muốn chặt chẽ hơn về mặt logic form)
+          // Tuy nhiên HTML đã handle [attr.disabled], nên ở đây setValue là đủ.
+        } else {
+          // Nếu địa chỉ mới CÓ hỗ trợ ship -> Đảm bảo người dùng có thể chọn lại COD
+          // Không cần làm gì thêm vì HTML sẽ tự enable lại radio button
         }
       },
-      error: () => this.loading = false,
+      error: (err) => {
+        this.loading = false;
+        this.toast.error('Không thể tải thông tin thanh toán');
+        console.error(err);
+      },
       complete: () => this.loading = false
     });
   }
 
   openAddressPicker() {
     const ref = this.modal.open(AddressPickerComponent, { centered: true, size: 'lg' });
-    ref.result.then((a) => {
-      if (a?.id) {
-        this.form.controls.addressId.setValue(a.id);
-        this.reloadSummary(a.id);
+
+    // Khi đóng modal picker
+    ref.result.then((selectedAddress) => {
+      if (selectedAddress?.id) {
+        console.log('Selected Address ID:', selectedAddress.id);
+        // Gọi reload ngay lập tức với ID mới
+        this.reloadSummary(selectedAddress.id);
       }
     }).catch(() => {});
   }
 
   placeOrder() {
+    // ... (Giữ nguyên code cũ)
     if (this.form.invalid || !this.summary()) return;
     const method = this.form.controls.method.value;
     const addrId = this.form.controls.addressId.value;
@@ -81,22 +108,20 @@ export class CheckoutComponent implements OnInit {
       this.checkout.placeOrderCod({ addressId: addrId, paymentMethod: 'COD', note }).subscribe({
         next: (res) => {
           this.toast.success(`Đặt hàng thành công. Mã đơn: ${res.orderNumber}. Vui lòng kiểm tra email.`);
-          this.router.navigateByUrl('/orders');
+          this.router.navigateByUrl('/orders'); // Hoặc trang success
         },
         error: () => this.loading = false,
         complete: () => this.loading = false
       });
     } else {
-      // PAYPAL
+      // PAYPAL logic...
       const origin = window.location.origin;
       const returnUrl = `${origin}/payment/paypal/return`;
       const cancelUrl = `${origin}/payment/paypal/cancel`;
       this.loading = true;
       this.payments.paypalCreate(addrId, returnUrl, cancelUrl).subscribe({
         next: (res) => {
-          // Lưu orderNumber để dùng ở trang return
           sessionStorage.setItem('pp.orderNumber', res.orderNumber);
-          // Redirect đến approvalUrl
           window.location.href = res.approvalUrl;
         },
         error: () => this.loading = false

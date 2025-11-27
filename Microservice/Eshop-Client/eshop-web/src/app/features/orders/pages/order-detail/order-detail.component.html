@@ -1,69 +1,133 @@
-<div *ngIf="loading" class="alert alert-info">Đang tải...</div>
-<div *ngIf="!loading && !order" class="alert alert-danger">Không tìm thấy đơn hàng.</div>
+<div class="container py-4">
 
-<div *ngIf="order">
-  <div class="d-flex justify-content-between align-items-center mb-3">
-    <div>
-      <h5 class="mb-1">Đơn hàng #{{ order.orderNumber }}</h5>
-      <div class="small text-muted">
-        Ngày đặt: {{ order.orderTime | date:'short' }} · Trạng thái: {{ order.status }}
-      </div>
-      <div class="small text-muted">
-        Thanh toán: {{ order.paymentMethod }}
-      </div>
-    </div>
-    <a routerLink="/orders" class="btn btn-link">← Quay lại lịch sử</a>
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="mt-2 text-muted">Đang tải thông tin đơn hàng...</p>
   </div>
 
-  <div class="row">
-    <!-- Items -->
-    <div class="col-lg-8 mb-3">
-      <div class="list-group">
-        <div class="list-group-item" *ngFor="let it of order.items">
-          <div class="d-flex">
-            <img [src]="it.image || 'assets/image.png'" width="72" height="72" class="me-3 rounded border" alt="">
-            <div class="flex-grow-1">
-              <div class="fw-semibold">{{ it.name }}</div>
-              <div class="small text-muted">x{{ it.quantity }}</div>
-              <div class="small">Đơn giá: ${{ it.unitPrice | number:'1.2-2' }}</div>
-            </div>
-            <div class="text-end">
-              <div class="fw-semibold">
-                ${{ it.subtotal | number:'1.2-2' }}
+  <div *ngIf="!loading && !order" class="text-center py-5">
+    <div class="alert alert-warning d-inline-block px-5">
+      <i class="bi bi-exclamation-triangle me-2"></i> Không tìm thấy đơn hàng này.
+    </div>
+    <div class="mt-3">
+      <a routerLink="/orders" class="btn btn-outline-primary">Quay lại danh sách</a>
+    </div>
+  </div>
+
+  <div *ngIf="order" class="animate-fade-in">
+
+    <div class="d-flex align-items-center justify-content-between mb-4">
+      <a routerLink="/orders" class="text-decoration-none text-muted hover-primary">
+        <i class="bi bi-arrow-left me-1"></i> Quay lại lịch sử
+      </a>
+      <span class="text-muted small">Ngày đặt: {{ order.orderTime | date:'dd/MM/yyyy HH:mm' }}</span>
+    </div>
+
+    <div class="card border-0 shadow-sm mb-4 bg-white">
+      <div class="card-body p-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+        <div>
+          <h4 class="mb-1 fw-bold text-dark">Đơn hàng #{{ order.orderNumber }}</h4>
+          <div class="text-muted small">Cảm ơn bạn đã mua sắm tại eShop!</div>
+        </div>
+        <div class="status-badge px-3 py-2 rounded-pill fw-bold" [ngClass]="getStatusClass(order.status)">
+          {{ order.status }}
+        </div>
+      </div>
+    </div>
+
+    <div class="row g-4">
+      <div class="col-lg-8">
+        <div class="card border-0 shadow-sm mb-4">
+          <div class="card-header bg-white py-3 fw-bold border-bottom">
+            Danh sách sản phẩm ({{ order.items.length }})
+          </div>
+          <div class="card-body p-0">
+            <div *ngFor="let it of order.items; let last = last" class="p-3 d-flex align-items-center"
+              [class.border-bottom]="!last">
+
+              <div class="position-relative me-3">
+                <img [src]="it.image ? 'assets' + it.image : 'assets/image.png'" alt=""
+                  class="rounded border me-3 flex-shrink-0" style="width: 80px; height: 80px; object-fit: cover;">
+
+                <span class="position-absolute bottom-0 end-0 badge bg-dark rounded-pill shadow-sm"
+                  style="font-size: 0.7rem;">
+                  x{{ it.quantity }}
+                </span>
+              </div>
+
+              <div class="flex-grow-1">
+                <h6 class="mb-1">
+                  <span class="text-dark fw-semibold">{{ it.name }}</span>
+                </h6>
+                <div class="small text-muted mb-1">
+                  Đơn giá: {{ it.unitPrice | number:'1.2-2' }}
+                </div>
+              </div>
+
+              <div class="text-end ps-3">
+                <div class="fw-bold text-dark fs-6">
+                  {{ it.subtotal | number:'1.2-2' }}
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
 
-    <!-- Summary -->
-    <div class="col-lg-4">
-      <div class="card mb-3">
-        <div class="card-header">Tổng tiền</div>
-        <div class="card-body">
-          <div class="d-flex justify-content-between">
-            <span>Tạm tính</span>
-            <span>${{ order.productTotal | number:'1.2-2' }}</span>
-          </div>
-          <div class="d-flex justify-content-between">
-            <span>Phí ship</span>
-            <span>${{ order.shippingCost | number:'1.2-2' }}</span>
-          </div>
-          <hr>
-          <div class="d-flex justify-content-between fw-semibold">
-            <span>Thanh toán</span>
-            <span>${{ order.paymentTotal | number:'1.2-2' }}</span>
-          </div>
-        </div>
-      </div>
+      <div class="col-lg-4">
+        <div class="sticky-sidebar">
 
-      <div class="card">
-        <div class="card-header">Địa chỉ giao hàng</div>
-        <div class="card-body">
-          <div class="small">
-            {{ order.shippingAddress }}
+          <div class="card border-0 shadow-sm mb-3">
+            <div class="card-body">
+              <h6 class="card-title fw-bold mb-3">Thanh toán</h6>
+
+              <div class="d-flex justify-content-between mb-2 small text-muted">
+                <span>Tạm tính</span>
+                <span>{{ order.productTotal | number:'1.2-2' }}</span>
+              </div>
+              <div class="d-flex justify-content-between mb-2 small text-muted">
+                <span>Phí vận chuyển</span>
+                <span>{{ order.shippingCost | number:'1.2-2' }}</span>
+              </div>
+              <div class="d-flex justify-content-between mb-3 small text-muted">
+                <span>Giảm giá</span>
+                <span>- {{ 0 | number:'1.2-2' }}</span>
+              </div>
+
+              <hr class="my-2 opacity-10">
+
+              <div class="d-flex justify-content-between align-items-center pt-2">
+                <span class="fw-bold text-dark">Tổng cộng</span>
+                <span class="fs-4 fw-bold text-danger">
+                  {{ order.paymentTotal | number:'1.2-2' }}
+                </span>
+              </div>
+
+              <div class="mt-3 pt-3 border-top text-center">
+                <span class="badge bg-light text-dark border">
+                  <i class="bi bi-credit-card me-1"></i> {{ order.paymentMethod }}
+                </span>
+              </div>
+            </div>
           </div>
+
+          <div class="card border-0 shadow-sm">
+            <div class="card-body">
+              <h6 class="card-title fw-bold mb-3">Thông tin nhận hàng</h6>
+
+              <div class="d-flex">
+                <i class="bi bi-geo-alt text-primary me-2 fs-5"></i>
+                <div>
+                  <div class="small text-secondary" style="line-height: 1.5;">
+                    {{ order.shippingAddress }}
+                  </div>
+                </div>
+              </div>
+
+
+            </div>
+          </div>
+
         </div>
       </div>
     </div>

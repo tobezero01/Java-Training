@@ -1,55 +1,85 @@
-<div class="container py-3">
-  <h3 class="mb-3">{{ id ? 'Sửa địa chỉ' : 'Thêm địa chỉ' }}</h3>
+<div class="modal-header px-4 pt-4 border-bottom-0" *ngIf="isModal">
+  <h5 class="modal-title fw-bold fs-5">{{ id ? 'Sửa địa chỉ' : 'Thêm địa chỉ mới' }}</h5>
+  <button type="button" class="btn-close" (click)="cancel()"></button>
+</div>
 
-  <form [formGroup]="form" (ngSubmit)="save()">
+<div [class.container]="!isModal" [class.py-3]="!isModal" [class.modal-body]="isModal" [class.px-4]="isModal">
+
+  <h3 class="mb-3 fw-bold" *ngIf="!isModal">{{ id ? 'Sửa địa chỉ' : 'Thêm địa chỉ' }}</h3>
+
+  <div *ngIf="loading" class="text-center py-4">
+    <div class="spinner-border text-primary" role="status"></div>
+  </div>
+
+  <form [formGroup]="form" (ngSubmit)="save()" *ngIf="!loading">
     <div class="row g-3">
       <div class="col-md-6">
-        <label class="form-label">First name</label>
-        <input class="form-control" formControlName="firstName">
+        <label class="form-label small fw-bold text-secondary">Họ (Last Name)</label>
+        <input class="form-control" formControlName="lastName" placeholder="Ví dụ: Nguyen">
       </div>
       <div class="col-md-6">
-        <label class="form-label">Last name</label>
-        <input class="form-control" formControlName="lastName">
+        <label class="form-label small fw-bold text-secondary">Tên (First Name)</label>
+        <input class="form-control" formControlName="firstName" placeholder="Ví dụ: Van A">
       </div>
+
       <div class="col-md-6">
-        <label class="form-label">Phone</label>
-        <input class="form-control" formControlName="phoneNumber">
+        <label class="form-label small fw-bold text-secondary">Số điện thoại</label>
+        <input class="form-control" formControlName="phoneNumber" placeholder="09xx...">
+      </div>
+
+      <div class="col-md-6">
+        <label class="form-label small fw-bold text-secondary">Quốc gia</label>
+        <select class="form-select" formControlName="countryId">
+          <option [ngValue]="1">Vietnam</option>
+        </select>
+      </div>
+
+      <div class="col-12">
+        <label class="form-label small fw-bold text-secondary">Địa chỉ (Số nhà, đường...)</label>
+        <input class="form-control" formControlName="addressLine1" placeholder="Số 123 đường ABC...">
       </div>
       <div class="col-12">
-        <label class="form-label">Address line 1</label>
-        <input class="form-control" formControlName="addressLine1">
+        <label class="form-label small fw-bold text-secondary">Địa chỉ phụ (Căn hộ, tòa nhà...)</label>
+        <input class="form-control" formControlName="addressLine2" placeholder="Tòa nhà Tech, Tầng 12...">
       </div>
-      <div class="col-12">
-        <label class="form-label">Address line 2</label>
-        <input class="form-control" formControlName="addressLine2">
+
+      <div class="col-md-4">
+        <label class="form-label small fw-bold text-secondary">Tỉnh / Thành phố</label>
+        <select class="form-select" formControlName="state">
+          <option value="" disabled>-- Chọn tỉnh thành --</option>
+          <option *ngFor="let p of provinces" [value]="p">{{ p }}</option>
+        </select>
+        <div class="text-danger small mt-1" *ngIf="form.controls.state.invalid && form.controls.state.touched">
+          Vui lòng chọn tỉnh thành.
+        </div>
       </div>
       <div class="col-md-4">
-        <label class="form-label">City</label>
+        <label class="form-label small fw-bold text-secondary">Quận / Huyện </label>
         <input class="form-control" formControlName="city">
       </div>
       <div class="col-md-4">
-        <label class="form-label">State</label>
-        <input class="form-control" formControlName="state">
-      </div>
-      <div class="col-md-4">
-        <label class="form-label">Postal code</label>
+        <label class="form-label small fw-bold text-secondary">Mã bưu chính</label>
         <input class="form-control" formControlName="postalCode">
       </div>
-      <div class="col-md-4">
-        <label class="form-label">Country ID</label>
-        <input type="number" class="form-control" formControlName="countryId">
-      </div>
-      <div class="col-12">
+
+      <div class="col-12 mt-3">
         <div class="form-check">
           <input type="checkbox" class="form-check-input" id="def" formControlName="defaultForShipping">
-          <label class="form-check-label" for="def">Đặt làm địa chỉ mặc định</label>
+          <label class="form-check-label user-select-none" for="def">Đặt làm địa chỉ mặc định</label>
         </div>
       </div>
     </div>
 
-    <div class="mt-3 d-flex gap-2">
-      <button class="btn btn-primary" type="submit" [disabled]="saving || form.invalid">Lưu</button>
-      <button class="btn btn-secondary" type="button" (click)="cancel()">Hủy</button>
+    <div [class.modal-footer]="isModal" [class.border-top-0]="isModal" [class.px-0]="isModal" [class.pb-0]="isModal"
+      [class.mt-4]="!isModal" class="d-flex gap-2">
+
+      <button class="btn btn-secondary px-4" type="button" (click)="cancel()">
+        Hủy
+      </button>
+      <button class="btn btn-primary px-4" type="submit" [disabled]="saving || form.invalid">
+        <span *ngIf="saving" class="spinner-border spinner-border-sm me-1"></span>
+        {{ id ? 'Cập nhật' : 'Lưu địa chỉ' }}
+      </button>
     </div>
   </form>
 </div>

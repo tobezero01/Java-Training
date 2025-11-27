@@ -1,0 +1,54 @@
+/* Container căn giữa chiều dọc */
+.min-vh-75 {
+  min-height: 75vh;
+}
+
+/* Card */
+.success-card {
+  border-radius: 20px;
+  background: #fff;
+}
+
+/* Icon Container: Hình tròn xanh */
+.success-icon-container {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #28a745, #20c997);
+  /* Gradient xanh lá */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3);
+  /* Đổ bóng xanh */
+
+  /* Animation nhẹ: Nảy lên khi load */
+  animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+/* Viền nét đứt cho mã đơn hàng */
+.border-dashed {
+  border-style: dashed !important;
+  border-color: #dee2e6 !important;
+}
+
+/* Button Styles */
+.btn-lg {
+  font-size: 1rem;
+  font-weight: 600;
+  padding: 0.8rem 1.5rem;
+  border-radius: 10px;
+}
+
+/* Animation Keyframe */
+@keyframes popIn {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

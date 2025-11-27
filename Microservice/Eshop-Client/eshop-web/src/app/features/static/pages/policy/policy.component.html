@@ -1,4 +1,98 @@
-<div class="container py-3">
-  <h3>Chính sách</h3>
-  <p>Nội dung chính sách... </p>
+<div class="container py-5 bg-light-subtle">
+  <div class="row justify-content-center">
+    <div class="col-lg-10">
+
+      <div class="text-center mb-5">
+        <h2 class="fw-bold text-gradient">Chính sách Vận chuyển & Giao hàng</h2>
+        <p class="text-muted">
+          Áp dụng cho toàn bộ đơn hàng trên hệ thống eShop. Cập nhật mới nhất 2025.
+        </p>
+      </div>
+
+      <div class="row g-4 mb-5">
+        <div class="col-md-4">
+          <div class="card h-100 border-0 shadow-sm text-center p-3 feature-card">
+            <div class="mb-3 text-primary fs-1"><i class="bi bi-truck"></i></div>
+            <h6 class="fw-bold">Giao hàng toàn quốc</h6>
+            <p class="small text-muted mb-0">Hỗ trợ vận chuyển đến 63 tỉnh thành phố với đối tác uy tín.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100 border-0 shadow-sm text-center p-3 feature-card">
+            <div class="mb-3 text-success fs-1"><i class="bi bi-cash-coin"></i></div>
+            <h6 class="fw-bold">Thanh toán linh hoạt</h6>
+            <p class="small text-muted mb-0">Hỗ trợ thanh toán khi nhận hàng (COD) cho hầu hết các khu vực.</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card h-100 border-0 shadow-sm text-center p-3 feature-card">
+            <div class="mb-3 text-danger fs-1"><i class="bi bi-shield-check"></i></div>
+            <h6 class="fw-bold">Đảm bảo an toàn</h6>
+            <p class="small text-muted mb-0">Hàng hóa được đóng gói cẩn thận và có bảo hiểm vận chuyển.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card border-0 shadow-sm mb-4">
+        <div class="card-header bg-white py-3">
+          <h5 class="m-0 fw-bold text-dark"><i class="bi bi-geo-alt-fill me-2 text-danger"></i>Bảng cước phí chi tiết
+          </h5>
+        </div>
+        <div class="card-body p-0">
+
+          <div class="table-responsive">
+            <table class="table table-hover mb-0 align-middle">
+              <thead class="bg-light text-secondary">
+                <tr>
+                  <th class="ps-4 py-3 border-0">Tỉnh / Thành phố</th>
+                  <th class="py-3 border-0">Phí vận chuyển</th>
+                  <th class="py-3 border-0">Thời gian (dự kiến)</th>
+                  <th class="py-3 border-0 text-center">Thanh toán COD</th>
+                </tr>
+              </thead>
+              <tbody>
+                <ng-container *ngFor="let region of shippingTable">
+                  <tr class="table-secondary">
+                    <td colspan="4" class="fw-bold ps-4 text-uppercase text-dark small py-2">
+                      <i class="bi bi-caret-right-fill me-1"></i>{{ region.region }}
+                    </td>
+                  </tr>
+
+                  <tr *ngFor="let p of region.provinces">
+                    <td class="ps-4 fw-semibold text-secondary">{{ p.name }}</td>
+                    <td>
+                      <span class="fw-bold text-primary">${{ p.rate | number:'1.2-2' }}</span>
+                    </td>
+                    <td class="small text-muted">
+                      {{ p.days }} - {{ p.days + 2 }} ngày
+                    </td>
+                    <td class="text-center">
+                      <span *ngIf="p.cod"
+                        class="badge bg-success-subtle text-success border border-success-subtle rounded-pill px-3">
+                        Có hỗ trợ
+                      </span>
+                      <span *ngIf="!p.cod"
+                        class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-3">
+                        Không
+                      </span>
+                    </td>
+                  </tr>
+                </ng-container>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="alert alert-warning border-0 shadow-sm d-flex align-items-center" role="alert">
+        <i class="bi bi-exclamation-triangle-fill fs-4 me-3 text-warning"></i>
+        <div>
+          <strong>Lưu ý quan trọng:</strong> Đối với các tỉnh thành
+          <span class="badge bg-danger">Không hỗ trợ COD</span> (Điện Biên, Lai Châu...),
+          quý khách vui lòng chọn phương thức thanh toán <strong>PayPal</strong> hoặc Chuyển khoản trước khi đặt hàng.
+        </div>
+      </div>
+
+    </div>
+  </div>
 </div>

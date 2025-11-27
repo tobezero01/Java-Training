@@ -21,9 +21,9 @@ public class OrderDetail {
 
     // product snapshot
     private Integer productId;
-    @Column(length = 128)
+    @Column(length = 512)
     private String productName;
-    @Column(length = 64)
+    @Column(length = 256)
     private String productAlias;
     @Column(length = 256)
     private String productImage;

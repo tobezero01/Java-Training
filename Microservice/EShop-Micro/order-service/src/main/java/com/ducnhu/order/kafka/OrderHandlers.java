@@ -46,7 +46,7 @@ public class OrderHandlers {
         order.setStatus(OrderStatus.NEW);
 
         // Totals
-        order.setProductCost(0f);
+        order.setProductCost(e.productTotal());
         order.setSubtotal(e.productTotal());
         order.setShippingCost(e.shippingCost());
         order.setTax(0f);
@@ -82,20 +82,20 @@ public class OrderHandlers {
     }
 
     @KafkaListener(topics = Topics.ORDER_PAID_EVENTS, groupId = "order-service")
-    public void onPaid(OrderPaidEventV2  ev) {
+    public void onPaid(OrderPaidEventV2 ev) {
         Order order = orderRepository.findByOrderNumberAndCustomerId(ev.orderNumber(), ev.customerId())
                 .orElseGet(() -> {
                     Order o = new Order();
                     o.setOrderNumber(ev.orderNumber());
                     o.setCustomerId(ev.customerId());
-                    o.setOrderTime(new Date());
+                    o.setOrderTime(ev.paidTime() != null ? ev.paidTime() : new Date());
                     o.setCustomerEmail(ev.customerEmail());
                     o.setPaymentMethod(PaymentMethod.PAYPAL);
-                    o.setStatus(OrderStatus.NEW);
 
+                    // Address snapshot
                     AddressSnapshot s = ev.shippingAddress();
-                    String line1 = (s != null && s.line1()!=null && !s.line1().isBlank()) ? s.line1() : "N/A";
-                    String country = (s != null && s.country()!=null && !s.country().isBlank()) ? s.country() : "Unknown";
+                    String line1 = (s != null && s.line1() != null && !s.line1().isBlank()) ? s.line1() : "N/A";
+                    String country = (s != null && s.country() != null && !s.country().isBlank()) ? s.country() : "Unknown";
 
                     o.setFirstName(s != null ? nz(s.firstName()) : "");
                     o.setLastName(s != null ? nz(s.lastName()) : "");
@@ -107,14 +107,42 @@ public class OrderHandlers {
                     o.setPostalCode(s != null ? nz(s.postalCode()) : "");
                     o.setCountry(country);
 
-                    o.setSubtotal(0f);
-                    o.setShippingCost(0f);
+                    // Totals từ event snapshot
+                    float productTotal = ev.productTotal() != null ? ev.productTotal() : 0f;
+                    float shipping = ev.shippingCost() != null ? ev.shippingCost() : 0f;
+
+                    o.setProductCost(productTotal);
+                    o.setSubtotal(productTotal);
+                    o.setShippingCost(shipping);
                     o.setTax(0f);
-                    o.setTotal(ev.paidAmount());
+                    o.setTotal(ev.paidAmount() != null ? ev.paidAmount() : (productTotal + shipping));
+
                     return o;
                 });
+
+        // Nếu order chưa có items thì map từ event
+        if ((order.getOrderDetails() == null || order.getOrderDetails().isEmpty())
+                && ev.items() != null) {
+            for (OrderPlacedItem it : ev.items()) {
+                OrderDetail d = new OrderDetail();
+                d.setOrder(order);
+                d.setProductId(it.productId());
+                d.setProductName(it.name());
+                d.setProductAlias(it.alias());
+                d.setProductImage(it.image());
+                d.setUnitPrice(it.unitPrice() != null ? it.unitPrice() : 0f);
+                d.setQuantity(it.quantity() != null ? it.quantity() : 0);
+                d.setSubtotal(it.subtotal() != null ? it.subtotal() : 0f);
+                d.setShippingCost(it.shippingCost() != null ? it.shippingCost() : 0f);
+                d.setProductCost(0f); // nếu sau này có cost thực thì set thêm
+                order.getOrderDetails().add(d);
+            }
+        }
+
         if (ev.deliverDays() != null) order.setDeliverDays(ev.deliverDays());
         if (ev.deliverDate() != null) order.setDeliverDate(ev.deliverDate());
+
+        // Cập nhật trạng thái thanh toán
         order.setStatus(OrderStatus.PAID);
         order.setPaymentMethod(PaymentMethod.PAYPAL);
         order.setPaymentTransactionId(ev.transactionId());
@@ -126,12 +154,12 @@ public class OrderHandlers {
         t.setOrder(order);
         t.setStatus(OrderStatus.PAID);
         t.setUpdatedTime(new Date());
-        t.setNotes("PayPal captured (V2)");
+        t.setNotes("PayPal captured (V2, with snapshot)");
         order.getOrderTracks().add(t);
 
         orderRepository.save(order);
-        return;
     }
+
 
     @KafkaListener(topics = Topics.ORDER_CANCELLED_EVENTS, groupId = "order-service")
     public void onCancelled(OrderCancelledEvent ev) {
@@ -154,6 +182,9 @@ public class OrderHandlers {
         kafkaTemplate.send(Topics.ORDER_HAS_PURCHASED_RESP,
                 new OrderHasPurchasedResponse(req.correlationId(), req.customerId(), req.productId(), purchased));
     }
-    private static String nz(String s){ return s == null ? "" : s; }
+
+    private static String nz(String s) {
+        return s == null ? "" : s;
+    }
 
 }

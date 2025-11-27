@@ -1,11 +1,13 @@
 package com.ducnhu.common.dto;
 
 import com.ducnhu.common.events.customer.AddressSnapshot;
+import com.ducnhu.common.events.orders.OrderPlacedItem;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Data
 @AllArgsConstructor
@@ -20,5 +22,9 @@ public class Intent implements Serializable {
     private AddressSnapshot shippingAddress;
     private Integer countryId;
     private Integer addressId;
+
+    private Float productTotal;
+    private Float shippingCost;
+    private List<OrderPlacedItem> items;
 }
 

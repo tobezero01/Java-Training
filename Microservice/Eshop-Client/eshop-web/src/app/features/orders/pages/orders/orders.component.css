@@ -1,0 +1,53 @@
+/* Card Order */
+.order-card {
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+  border-left: 4px solid transparent;
+  /* Chuẩn bị cho hover hiệu ứng viền trái */
+}
+
+/* Hover: Nổi lên và có viền màu bên trái */
+.order-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1) !important;
+  border-left-color: #ff5722;
+  /* Màu cam Shopee */
+}
+
+/* Định dạng các badge trạng thái (Copy lại từ bài Order Detail cho đồng bộ) */
+.bg-info-subtle {
+  background-color: #cff4fc;
+  color: #055160;
+}
+
+.bg-warning-subtle {
+  background-color: #fff3cd;
+  color: #664d03;
+}
+
+.bg-success-subtle {
+  background-color: #d1e7dd;
+  color: #0f5132;
+}
+
+.bg-danger-subtle {
+  background-color: #f8d7da;
+  color: #842029;
+}
+
+.bg-secondary-subtle {
+  background-color: #e2e3e5;
+  color: #41464b;
+}
+
+/* Pagination đẹp hơn */
+.page-link {
+  color: #555;
+  border-radius: 6px !important;
+  margin: 0 2px;
+}
+
+.page-link:hover {
+  background-color: #f8f9fa;
+  color: #ff5722;
+}

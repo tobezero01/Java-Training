@@ -35,6 +35,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -126,7 +127,7 @@ public class CheckoutServiceImpl implements CheckoutService {
         MeResponse me = auth.me();
         // tạo mã đơn tạm (local)
         String orderNumber = "OD" + LocalDateTime.now().format(DateTimeFormatter.BASIC_ISO_DATE)
-                + "-" + String.format("%06d", (int)(Instant.now().toEpochMilli() % 1_000_000));
+                + "-" + String.format("%06d", (int) (Instant.now().toEpochMilli() % 1_000_000));
 
         // dựng event
         List<OrderPlacedItem> items = new ArrayList<>();
@@ -190,7 +191,7 @@ public class CheckoutServiceImpl implements CheckoutService {
 
         float productTotal = round2(productTotalF);
         float shippingCost = round2(shippingApplyF);
-        float payment      = round2(paymentF);
+        float payment = round2(paymentF);
 
         // saga
         // 1) NEW saga
@@ -265,11 +266,24 @@ public class CheckoutServiceImpl implements CheckoutService {
                     mailCfg.host(), mailCfg.port(), mailCfg.username(), mailCfg.password(),
                     mailCfg.smtpAuth(), mailCfg.smtpSecured()
             );
+            String orderTimeStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
+            String shippingAddressStr = addressLine(a); // a là AddressDTO đã lấy ở trên
+            int deliverDays = (rate.days() == null) ? 0 : rate.days();
+            String deliveryDateStr = LocalDate.now().plusDays(deliverDays).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+            String totalStr = String.format(Locale.US, "%.2f USD", payment); // payment đã tính ở trên
+            String orderLink = "<a href=\"http://localhost:4200/orders/history\">Check your order</a>";
             String subject = mailCfg.orderConfirmSubject().replace("[[orderId]]", orderNumber);
+
             String body = mailCfg.orderConfirmContent()
                     .replace("[[name]]", customerEmail)
                     .replace("[[orderId]]", orderNumber)
-                    .replace("[[time]]", LocalDateTime.now().toString());
+                    .replace("[[orderTime]]", orderTimeStr) // Sửa [[time]] thành [[orderTime]]
+                    .replace("[[shippingAddress]]", shippingAddressStr) // Thêm mới
+                    .replace("[[total]]", totalStr) // Thêm mới
+                    .replace("[[paymentMethod]]", "COD") // Thêm mới
+                    .replace("[[deliveryDays]]", String.valueOf(deliverDays)) // Thêm mới
+                    .replace("[[deliveryDate]]", deliveryDateStr) // Thêm mới
+                    .replace("[[orderLink]]", orderLink); // Thêm mới
             mailService.sendHtml(sender, mailCfg.mailFrom(), mailCfg.senderName(), customerEmail, subject, body);
         } catch (Exception e) {
             log.error("Send order confirmation email FAILED (orderNumber={}, customerEmail={})", orderNumber, customerEmail, e);

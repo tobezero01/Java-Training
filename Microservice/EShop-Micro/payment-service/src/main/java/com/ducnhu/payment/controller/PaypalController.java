@@ -2,11 +2,10 @@ package com.ducnhu.payment.controller;
 
 import com.ducnhu.common.dto.Intent;
 import com.ducnhu.common.events.carts.CartClearCommand;
-import com.ducnhu.common.events.customer.AddressDTO;
-import com.ducnhu.common.events.customer.AddressQueryRequest;
-import com.ducnhu.common.events.customer.AddressQueryResponse;
-import com.ducnhu.common.events.customer.AddressSnapshot;
+import com.ducnhu.common.events.customer.*;
 import com.ducnhu.common.events.orders.OrderCancelledEvent;
+import com.ducnhu.common.events.orders.OrderPlacedEventV2;
+import com.ducnhu.common.events.orders.OrderPlacedItem;
 import com.ducnhu.common.events.settings.EmailSettingsRequest;
 import com.ducnhu.common.events.settings.EmailSettingsResponse;
 import com.ducnhu.common.events.shipping.ShippingRateRequest;
@@ -17,10 +16,7 @@ import com.ducnhu.common.mail.CommonMailService;
 import com.ducnhu.common.mail.MailUtil;
 import com.ducnhu.payment.client.AuthClient;
 import com.ducnhu.payment.client.MeResponse;
-import com.ducnhu.payment.dto.PaypalCaptureResult;
-import com.ducnhu.payment.dto.PaypalCreateResult;
-import com.ducnhu.payment.dto.PaypalOrderValidation;
-import com.ducnhu.payment.dto.Summary;
+import com.ducnhu.payment.dto.*;
 import com.ducnhu.payment.outbox.OutboxService;
 import com.ducnhu.payment.service.PaymentApplicationService;
 import com.ducnhu.payment.service.PaymentIntentStore;
@@ -43,10 +39,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -74,43 +67,38 @@ public class PaypalController {
             @RequestParam(name = "returnUrl") String returnUrl,
             @RequestParam(name = "cancelUrl") String cancelUrl,
             @AuthenticationPrincipal String customerEmail) {
+
         MeResponse me = authClient.me();
-        AddressQueryResponse addr = replyClient.request(
-                Topics.CUST_ADDR_REQ, Topics.CUST_ADDR_RESP, AddressQueryResponse.class,
-                corr -> new AddressQueryRequest(corr, Topics.CUST_ADDR_RESP, me.id(), addressId),
-                java.time.Duration.ofSeconds(10)
-        );
-        AddressDTO a = addr.address();
-        if (a == null) throw new RuntimeException("Address not found");
 
-// Chuẩn hoá field chống null
-        String countryLabel = (a.countryName() != null && !a.countryName().isBlank()) ? a.countryName() : "Unknown";
-        String line1 = (a.addressLine1() != null && !a.addressLine1().isBlank())
-                ? a.addressLine1()
-                : (a.addressLine2() != null ? a.addressLine2() : "N/A");
+        // 1) Tính tổng + snapshot address + items ở server
+        CheckoutSnapshot snap = orchestrator.snapshot(me.id(), addressId);
+        Summary sum = snap.summary();
+        AddressSnapshot adr = snap.shippingAddress();
+        Integer countryId = snap.countryId();
 
-        AddressSnapshot adr = new AddressSnapshot(
-                safe(a.firstName()), safe(a.lastName()), safe(a.phoneNumber()),
-                line1, safe(a.addressLine2()),
-                safe(a.city()), safe(a.state()), safe(a.postalCode()),
-                countryLabel
-        );
-        // Tính tổng server-side
-        Summary sum = orchestrator.summarize(me.id(), addressId);
         String currency = "USD";
         String orderNumber = "OD" + LocalDateTime.now().format(DateTimeFormatter.BASIC_ISO_DATE)
                 + "-" + String.format("%06d", (int) (Instant.now().toEpochMilli() % 1_000_000));
 
-        // 2) Tạo đơn PayPal bằng số tiền tính được + ép reference_id=orderNumber
-        PaypalCreateResult r = paypalService.createOrderForServer(orderNumber, sum.paymentTotal(), currency, returnUrl, cancelUrl);
-        Integer countryId = a.countryId();
+        // 2) Tạo đơn PayPal, ép amount = paymentTotal server-side
+        PaypalCreateResult r = paypalService.createOrderForServer(
+                orderNumber, sum.paymentTotal(), currency, returnUrl, cancelUrl);
 
-        // 3) Lưu PaymentIntent để capture đối soát 1–1
-        intentStore.put(new Intent(orderNumber, r.orderId(),
-                sum.paymentTotal(), currency, me.id(),
-                customerEmail, adr,
+        // 3) Lưu PaymentIntent (Redis) – THÊM snapshot giỏ hàng
+        intentStore.put(new Intent(
+                orderNumber,
+                r.orderId(),
+                sum.paymentTotal(),
+                currency,
+                me.id(),
+                customerEmail,
+                adr,
                 countryId,
-                addressId ));
+                addressId,
+                sum.productTotal(),
+                sum.shipping(),
+                snap.items()
+        ));
 
         return Map.of(
                 "paypalOrderId", r.orderId(),
@@ -162,6 +150,7 @@ public class PaypalController {
         String etaStr = (deliverDays > 0)
                 ? etaDate.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
                 : "Updating soon";
+
         PaypalCaptureResult cap = paymentApp.captureAndPublish(
                 paypalOrderId,
                 orderNumber,
@@ -171,9 +160,12 @@ public class PaypalController {
                 intent.currency,
                 sa,
                 deliverDays,
-                deliverDate
-
+                deliverDate,
+                intent.getProductTotal(),
+                intent.getShippingCost(),
+                intent.getItems()
         );
+
 
         PaypalOrderValidation validate = paypalService.validate(paypalOrderId, intent.amount, intent.currency, orderNumber, true);
         if (!validate.valid()) throw new IllegalStateException("Validation failed: " + validate.reason());
@@ -190,16 +182,17 @@ public class PaypalController {
         String totalStr = String.format(Locale.US, "%.2f %s", intent.getAmount(), intent.getCurrency());
         String paymentMethod = "PayPal";
         String subj = settingsResponse.orderConfirmSubject().replace("[[orderId]]", orderNumber);
+        String orderLink = "<a href=\"http://localhost:4200/orders/history\">Check your order</a>";
         String body = settingsResponse.orderConfirmContent()
                 .replace("[[name]]", intent.getCustomerEmail())
                 .replace("[[orderId]]", orderNumber)
                 .replace("[[orderTime]]", orderTime)
-                .replace("[[time]]", orderTime)
                 .replace("[[shippingAddress]]", shippingAddressText)
                 .replace("[[total]]", totalStr)
                 .replace("[[paymentMethod]]", paymentMethod)
                 .replace("[[deliveryDays]]", String.valueOf(deliverDays))
-                .replace("[[deliveryDate]]", etaStr);
+                .replace("[[deliveryDate]]", etaStr)
+                .replace("[[orderLink]]", orderLink);
 
         mailService.sendHtml(sender, settingsResponse.mailFrom(), settingsResponse.senderName(),
                 intent.getCustomerEmail(), subj, body);

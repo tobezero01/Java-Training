@@ -3,6 +3,7 @@ package com.ducnhu.payment.service;
 import com.ducnhu.common.events.customer.AddressSnapshot;
 import com.ducnhu.common.events.orders.OrderPaidEvent;
 import com.ducnhu.common.events.orders.OrderPaidEventV2;
+import com.ducnhu.common.events.orders.OrderPlacedItem;
 import com.ducnhu.common.kafka.Topics;
 import com.ducnhu.payment.dto.PaypalCaptureResult;
 import com.ducnhu.payment.outbox.OutboxService;
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -30,7 +32,10 @@ public class PaymentApplicationService {
                                                  String currency,
                                                  AddressSnapshot shippingAddress,
                                                  Integer deliverDays,            // NEW
-                                                 Date deliverDate ) {
+                                                 Date deliverDate ,
+                                                 Float productTotal,
+                                                 Float shippingCost,
+                                                 List<OrderPlacedItem> items) {
         // goi capture
         PaypalCaptureResult captureResult = paypal.capture(paypalOrderId);
 
@@ -52,7 +57,10 @@ public class PaymentApplicationService {
                 orderNumber, customerId, customerEmail,
                 captureResult.captureId(), paymentTotal, currency, new Date(),
                 shippingAddress, "PAYPAL",
-                deliverDays, deliverDate
+                deliverDays, deliverDate,
+                productTotal,
+                shippingCost,
+                items
         );
         outbox.enqueue(Topics.ORDER_PAID_EVENTS, orderNumber, event);
         return captureResult;

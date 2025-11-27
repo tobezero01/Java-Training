@@ -1,15 +1,73 @@
-<div class="container py-5">
-  <div *ngIf="loading" class="alert alert-info">Đang xác nhận thanh toán PayPal...</div>
-  <div *ngIf="!loading && ok" class="alert alert-success">
-    Thanh toán PayPal thành công. Vui lòng kiểm tra email xác nhận đơn hàng.
-    <div class="mt-3">
-      <a routerLink="/orders" class="btn btn-success btn-sm">Tới trang đơn hàng</a>
+<div class="min-vh-100 d-flex align-items-center justify-content-center bg-light py-5">
+
+  <div class="card border-0 shadow-lg text-center p-4 p-md-5"
+    style="max-width: 480px; width: 100%; border-radius: 20px;">
+    <div class="card-body">
+
+      <div *ngIf="loading" class="fade-in">
+        <div class="mb-4 position-relative d-inline-block">
+          <div class="spinner-border text-primary" style="width: 4rem; height: 4rem;" role="status"></div>
+          <div class="position-absolute top-50 start-50 translate-middle">
+            <i class="bi bi-paypal text-primary fs-4"></i>
+          </div>
+        </div>
+        <h4 class="fw-bold text-dark mb-2">Đang xác thực...</h4>
+        <p class="text-muted">
+          Vui lòng không tắt trình duyệt. Chúng tôi đang xác nhận giao dịch với PayPal.
+        </p>
+      </div>
+
+      <div *ngIf="!loading && ok" class="scale-in">
+        <div class="mb-4">
+          <div class="icon-circle bg-success-subtle mx-auto">
+            <i class="bi bi-check-lg text-success" style="font-size: 3rem;"></i>
+          </div>
+        </div>
+
+        <h3 class="fw-bold text-success mb-2">Thanh toán thành công!</h3>
+        <p class="text-secondary mb-4">
+          Giao dịch PayPal đã hoàn tất. Đơn hàng của bạn đã được hệ thống ghi nhận.
+        </p>
+
+        <div class="bg-light rounded p-3 mb-4 border border-dashed">
+          <div class="d-flex justify-content-between small mb-1">
+            <span class="text-muted">Phương thức:</span>
+            <span class="fw-bold text-primary"><i class="bi bi-paypal me-1"></i>PayPal</span>
+          </div>
+          <div class="d-flex justify-content-between small">
+            <span class="text-muted">Trạng thái:</span>
+            <span class="fw-bold text-success">Đã thanh toán</span>
+          </div>
+        </div>
+
+        <a routerLink="/orders" class="btn btn-primary btn-lg w-100 shadow-sm fw-bold">
+          <i class="bi bi-box-seam me-2"></i>Xem đơn hàng ngay
+        </a>
+      </div>
+
+      <div *ngIf="!loading && !ok" class="scale-in">
+        <div class="mb-4">
+          <div class="icon-circle bg-danger-subtle mx-auto">
+            <i class="bi bi-x-lg text-danger" style="font-size: 3rem;"></i>
+          </div>
+        </div>
+
+        <h3 class="fw-bold text-danger mb-2">Thanh toán thất bại</h3>
+        <p class="text-secondary mb-4">
+          Rất tiếc, chúng tôi không thể xác thực giao dịch này hoặc bạn đã hủy thanh toán.
+        </p>
+
+        <div class="d-grid gap-2">
+          <a routerLink="/checkout" class="btn btn-primary shadow-sm">
+            <i class="bi bi-arrow-repeat me-2"></i>Thử thanh toán lại
+          </a>
+          <a routerLink="/contact" class="btn btn-outline-secondary border-0">
+            Cần hỗ trợ? Liên hệ ngay
+          </a>
+        </div>
+      </div>
+
     </div>
   </div>
-  <div *ngIf="!loading && !ok" class="alert alert-danger">
-    Không thể xác nhận thanh toán. Vui lòng thử lại hoặc liên hệ hỗ trợ.
-    <div class="mt-3">
-      <a routerLink="/checkout" class="btn btn-outline-secondary btn-sm">Quay lại Checkout</a>
-    </div>
-  </div>
+
 </div>

@@ -1,13 +1,13 @@
 import { CommonModule } from '@angular/common';
 import { Component, inject, OnInit } from '@angular/core';
 import { AddressService } from '../../../../core/services/address/address.service';
-import { Router } from '@angular/router';
+import { Router, RouterLink, RouterModule } from '@angular/router';
 import { Address } from '../../models/address.model';
 
 @Component({
   selector: 'app-address-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './address-list.component.html',
   styleUrl: './address-list.component.css'
 })

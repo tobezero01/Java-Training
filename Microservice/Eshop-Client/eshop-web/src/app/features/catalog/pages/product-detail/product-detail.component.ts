@@ -8,6 +8,7 @@ import { CategoryDto } from '../../models/category-dto.model';
 import { ToastrService } from 'ngx-toastr';
 import { CartService } from '../../../../core/services/cart/cart.service';
 import { AuthStateService } from '../../../../core/services/auth/auth-state.service';
+import { AddItemRequest } from '../../../cart/models/add-cart-item.model';
 
 @Component({
   standalone: true,
@@ -45,15 +46,37 @@ export class ProductDetailComponent implements OnInit {
   }
 
   // Task 2: addToCart check login
-  addToCart() {
+  async addToCart() {
     if (!this.authState.isAuthenticated()) {
       this.toastr.info('Vui lòng đăng nhập để thêm vào giỏ hàng.');
       this.router.navigate(['/login'], { queryParams: { returnUrl: this.router.url } });
       return;
     }
+    const alias = this.ar.snapshot.paramMap.get('alias')!;
+    const prod = await this.srv.getProductByAlias(alias);
+    if (!prod.inStock) {
+      this.toastr.warning("Sản phẩm không còn trong kho");
+      return;
+    }
+    this.p.set( prod);
+    if (!this.p) {
+      return;
+    }
 
-    // TODO: gọi CartService.addItem khi module giỏ hàng đã hoàn thiện
-    this.toastr.success('Đã thêm vào giỏ (demo).');
+    const req: AddItemRequest = {
+    productId: prod.id,
+    quantity: 1
+  };
+
+    this.cartService.addItem(req).subscribe({
+    next: () => {
+      this.toastr.success('Đã thêm vào giỏ hàng.');
+    },
+    error: (err) => {
+      console.error('addToCart error', err);
+      this.toastr.error('Không thể thêm vào giỏ hàng.');
+    }
+  });
   }
 
   buyNow() {
@@ -63,7 +86,8 @@ export class ProductDetailComponent implements OnInit {
       return;
     }
     // TODO: điều hướng sang checkout khi có logic
-    this.router.navigateByUrl('/checkout');
+    this.toastr.info('Chức năng này tạm chưa implement');
+    //this.router.navigateByUrl('/checkout');
   }
 
   // Task 3 – phần gallery, description (sẽ dùng trong HTML dưới)

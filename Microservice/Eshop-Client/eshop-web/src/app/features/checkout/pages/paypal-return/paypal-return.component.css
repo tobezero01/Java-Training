@@ -1,0 +1,63 @@
+/* Nền xanh nhạt toàn màn hình cho dịu mắt */
+.bg-light {
+  background-color: #f8f9fa !important;
+}
+
+/* Icon tròn nền màu */
+.icon-circle {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* Hiệu ứng tỏa sóng nhẹ */
+  box-shadow: 0 0 0 10px rgba(0, 0, 0, 0.03);
+}
+
+/* Các màu nền badge */
+.bg-success-subtle {
+  background-color: #d1e7dd;
+}
+
+.bg-danger-subtle {
+  background-color: #f8d7da;
+}
+
+/* Viền nét đứt */
+.border-dashed {
+  border-style: dashed !important;
+  border-color: #dee2e6 !important;
+}
+
+/* Animation: Xuất hiện dần */
+.fade-in {
+  animation: fadeIn 0.5s ease-in;
+}
+
+/* Animation: Phóng to (Pop in) cho Success/Error */
+.scale-in {
+  animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes popIn {
+  from {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}

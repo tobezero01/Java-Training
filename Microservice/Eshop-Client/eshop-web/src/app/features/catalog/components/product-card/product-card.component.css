@@ -1,0 +1,48 @@
+/* Tạo style riêng cho product card */
+.product-card {
+  border: none;
+  /* Bỏ viền mặc định nhìn cho sang */
+  transition: all 0.3s ease-in-out;
+  /* Tạo chuyển động mượt mà */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+  /* Bóng mờ nhẹ lúc bình thường */
+  border-radius: 12px;
+  /* Bo tròn mềm mại hơn mặc định */
+  overflow: hidden;
+  /* Để ảnh không bị tràn ra ngoài góc bo */
+}
+
+/* Hiệu ứng khi di chuột vào */
+.product-card:hover {
+  transform: translateY(-5px);
+  /* Nhấc nhẹ card lên 5px */
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+  /* Bóng đổ sâu hơn tạo cảm giác nổi */
+}
+
+/* Xử lý ảnh sản phẩm: CỰC KỲ QUAN TRỌNG */
+.card-img-wrapper {
+  height: 200px;
+  /* Cố định chiều cao khung ảnh */
+  padding: 15px;
+  /* Padding để ảnh không sát lề, trông thoáng hơn */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fff;
+}
+
+.card-img-top {
+  max-height: 100%;
+  max-width: 100%;
+  width: auto;
+  /* Ghi đè bootstrap để giữ tỷ lệ ảnh */
+  object-fit: contain;
+  /* Đảm bảo nhìn thấy toàn bộ sản phẩm (không bị cắt) */
+  transition: transform 0.3s ease;
+}
+
+/* Zoom nhẹ ảnh khi hover card (tùy chọn, nhìn rất cuốn) */
+.product-card:hover .card-img-top {
+  transform: scale(1.05);
+}

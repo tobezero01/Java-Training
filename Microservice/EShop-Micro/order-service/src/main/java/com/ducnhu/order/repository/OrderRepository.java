@@ -2,6 +2,8 @@ package com.ducnhu.order.repository;
 
 import com.ducnhu.order.entity.Order;
 import com.ducnhu.order.entity.OrderStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -11,6 +13,8 @@ import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<Order, Integer> {
     Optional<Order> findByOrderNumberAndCustomerId(String orderNumber, Integer customerId);
+    // Lấy danh sách đơn theo customer, mới nhất trước
+    Page<Order> findByCustomerIdOrderByOrderTimeDesc(Integer customerId, Pageable pageable);
 
     @Query("""
               SELECT (COUNT(od) > 0)

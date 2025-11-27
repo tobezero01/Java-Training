@@ -3,9 +3,10 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../../core/services/auth/auth.service';
 import { TokenStorageService } from '../../../../core/services/token-storage/token-storage.service';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { LoginRequest } from '../../models/login-request.model';
+import { AuthStateService } from '../../../../core/services/auth/auth-state.service';
 
 @Component({
   selector: 'app-login',
@@ -20,6 +21,8 @@ export class LoginComponent {
   private tokenStore = inject(TokenStorageService);
   private router = inject(Router);
   private toastr = inject(ToastrService);
+  private ar = inject(ActivatedRoute);
+  private authState = inject(AuthStateService);
 
   loading = false;
 
@@ -34,17 +37,23 @@ export class LoginComponent {
   onSubmit() {
     if (this.form.invalid) return;
     this.loading = true;
-    const { email, password, rememberMe } = this.form.getRawValue();
-    const payload: LoginRequest = { email, password, rememberMe };
 
-    this.auth.login(payload).subscribe({
+    const req: LoginRequest = {
+      email: this.form.value.email!,
+      password: this.form.value.password!,
+      rememberMe: this.form.value.rememberMe!
+    };
+
+    const returnUrl = this.ar.snapshot.queryParamMap.get('returnUrl') || '/catalog';
+
+    this.auth.login(req).subscribe({
       next: (res) => {
-        this.tokenStore.setToken(res.accessToken, !!this.form.value.rememberMe);
+        this.authState.loginSuccess(res.accessToken, !!this.form.value.rememberMe);
         this.toastr.success('Đăng nhập thành công');
-        this.router.navigateByUrl('/catalog');
+        this.router.navigateByUrl(returnUrl);
       },
       error: () => this.loading = false,
       complete: () => this.loading = false
-    })
+    });
   }
 }

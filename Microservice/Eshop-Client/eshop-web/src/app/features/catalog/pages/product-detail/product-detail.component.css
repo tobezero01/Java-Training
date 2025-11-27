@@ -1,0 +1,65 @@
+/* --- Xử lý ảnh --- */
+.main-image-container {
+  height: 400px;
+  /* Cố định chiều cao khung ảnh chính */
+  background-color: #fff;
+  overflow: hidden;
+}
+
+.thumb-box {
+  width: 70px;
+  /* Kích thước thumbnail cố định */
+  height: 70px;
+  cursor: pointer;
+  background-color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+}
+
+/* Thumbnail được chọn hoặc hover */
+.thumb-box:hover,
+.thumb-box.border-primary {
+  opacity: 1;
+  border-width: 2px !important;
+  /* Viền dày hơn khi chọn */
+}
+
+.thumb-box img {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+/* --- Xử lý nội dung HTML (Description) --- */
+/* Rất quan trọng vì nội dung HTML từ CMS thường có ảnh rất to làm vỡ layout */
+.esh-html img {
+  max-width: 100% !important;
+  height: auto !important;
+  border-radius: 8px;
+  margin: 10px 0;
+}
+
+.esh-html ul {
+  padding-left: 1.2rem;
+}
+
+.esh-html {
+  line-height: 1.6;
+  color: #444;
+  font-size: 0.95rem;
+}
+
+.content-body {
+  min-height: 200px;
+  /* Chiều cao tối thiểu cho phần mô tả */
+}
+
+/* --- Utilities --- */
+.hover-link:hover {
+  color: #0d6efd !important;
+  /* Bootstrap primary color */
+  text-decoration: underline !important;
+}

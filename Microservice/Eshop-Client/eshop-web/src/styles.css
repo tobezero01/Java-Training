@@ -4,3 +4,32 @@
 @layer theme, components, utilities;
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/utilities.css" layer(utilities);
+
+:root {
+  --esh-primary: #ff5722;
+  --esh-primary-dark: #e64a19;
+  --esh-bg: #f5f5f5;
+}
+
+body {
+  background-color: var(--esh-bg);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+.btn-primary {
+  background-color: var(--esh-primary);
+  border-color: var(--esh-primary);
+}
+
+.btn-primary:hover {
+  background-color: var(--esh-primary-dark);
+  border-color: var(--esh-primary-dark);
+}
+
+a {
+  color: var(--esh-primary);
+}
+
+a:hover {
+  color: var(--esh-primary-dark);
+}

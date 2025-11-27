@@ -1,25 +1,68 @@
-<div class="modal-header">
-  <h5 class="modal-title">Chọn địa chỉ</h5>
+<div class="modal-header border-0 pb-0 pt-4 px-4">
+  <h5 class="modal-title fw-bold fs-5">Địa chỉ nhận hàng</h5>
   <button type="button" class="btn-close" (click)="active.dismiss()"></button>
 </div>
 
-<div class="modal-body">
-  <div *ngIf="loading" class="alert alert-info">Đang tải...</div>
-  <div class="list-group" *ngIf="!loading">
-    <button class="list-group-item list-group-item-action" *ngFor="let a of items" (click)="choose(a)">
-      <div class="d-flex">
-        <div class="flex-grow-1">
-          <div class="fw-semibold">{{a.firstName}} {{a.lastName}} — {{a.phoneNumber}}</div>
-          <div class="small">{{a.addressLine1}} <span *ngIf="a.addressLine2">, {{a.addressLine2}}</span></div>
-          <div class="small text-muted">{{a.city}}, {{a.state}} {{a.postalCode}} — {{a.countryName || a.countryId}}
+<div class="modal-body bg-light scrollable-body px-4 py-3 mt-3">
+
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border text-primary" role="status"></div>
+    <p class="mt-2 text-muted small">Đang tải danh sách...</p>
+  </div>
+
+  <div *ngIf="!loading && items.length === 0" class="text-center py-5">
+    <img src="assets/no-address.png" style="width: 80px; opacity: 0.5;" (error)="img.style.display='none'" #img>
+    <p class="text-muted mt-2">Bạn chưa có địa chỉ nào.</p>
+  </div>
+
+  <div class="d-flex flex-column gap-3" *ngIf="!loading">
+
+    <div class="card border-0 shadow-sm address-card cursor-pointer" *ngFor="let a of items" (click)="choose(a)">
+
+      <div class="card-body p-3">
+        <div class="d-flex align-items-start">
+
+          <div class="me-3 mt-1">
+            <div class="form-check">
+              <input class="form-check-input custom-radio" type="radio" name="addressSelect" [checked]="false"
+                style="pointer-events: none;">
+            </div>
           </div>
+
+          <div class="flex-grow-1">
+            <div class="d-flex flex-wrap align-items-center mb-2">
+              <span class="fw-bold text-dark me-2" style="font-size: 1rem;">{{a.firstName}} {{a.lastName}}</span>
+              <span class="text-secondary border-start ps-2 me-2 small">{{a.phoneNumber}}</span>
+
+              <span class="badge border border-danger text-danger bg-danger-subtle fw-normal" style="font-size: 0.7rem;"
+                *ngIf="a.defaultForShipping">
+                Mặc định
+              </span>
+            </div>
+
+            <div class="text-dark mb-1" style="font-size: 0.9rem;">
+              {{a.addressLine1}} <span *ngIf="a.addressLine2">, {{a.addressLine2}}</span>
+            </div>
+
+            <div class="small text-muted">
+              {{a.city}}, {{a.state}} {{a.postalCode}} - {{a.countryName || a.countryId}}
+            </div>
+          </div>
+
+          <button class="btn btn-link text-muted p-0 ms-2 btn-edit" (click)="$event.stopPropagation();">
+            <span class="small">Sửa</span>
+          </button>
+
         </div>
-        <span class="badge text-bg-success align-self-center" *ngIf="a.defaultForShipping">Mặc định</span>
       </div>
-    </button>
+    </div>
+
   </div>
 </div>
 
-<div class="modal-footer">
-  <button class="btn btn-secondary" (click)="active.dismiss()">Đóng</button>
+<div class="modal-footer border-top bg-white py-3 px-4">
+  <button class="btn btn-outline-primary" (click)="active.close('manage')">
+    <i class="bi bi-plus-lg me-1"></i>Thêm địa chỉ mới
+  </button>
+  <button class="btn btn-secondary px-4 ms-auto" (click)="active.dismiss()">Hủy bỏ</button>
 </div>

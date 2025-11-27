@@ -1,3 +1,146 @@
-<div class="container py-4">
-  <router-outlet></router-outlet>
-</div>
+<header class="esh-header">
+  <!-- MENU 1 -->
+  <div class="esh-header-top container-fluid">
+    <div class="d-flex align-items-center">
+      <a routerLink="/catalog" class="esh-logo me-3">eShop</a>
+
+      <nav class="esh-menu1 d-flex gap-3">
+        <a routerLink="/catalog" class="esh-link">Danh mục</a>
+        <a routerLink="/contact" class="esh-link">Liên hệ</a>
+        <a routerLink="/policy" class="esh-link">Chính sách</a>
+
+      </nav>
+
+      <div class="ms-auto">
+        <!-- Chưa login -->
+        <a *ngIf="!isAuthenticated()" routerLink="/login" class="btn btn-primary esh-link">Login</a>
+
+        <!-- Đã login -->
+        <ng-container *ngIf="isAuthenticated()">
+          <a routerLink="/account" class="esh-link fw-semibold">
+            {{ userDisplayName() }}
+          </a>
+        </ng-container>
+      </div>
+    </div>
+  </div>
+
+  <!-- MENU 2 – chỉ hiện khi login -->
+  <div class="esh-header-bottom" *ngIf="isAuthenticated()">
+    <div class="container-fluid">
+      <nav class="esh-menu2 d-flex align-items-center gap-3">
+        <a routerLink="/account" class="esh-link">Hồ sơ</a>
+        <a routerLink="/account/addresses" class="esh-link">Địa chỉ</a>
+        <a routerLink="/cart" class="esh-link">Giỏ hàng</a>
+        <a routerLink="/orders" class="esh-link">Đơn hàng</a>
+        <button type="button" class="esh-link esh-btn-link" (click)="logout()">Đăng xuất</button>
+      </nav>
+    </div>
+  </div>
+</header>
+
+<main class="esh-main">
+  <div class="container-fluid py-3">
+    <router-outlet></router-outlet>
+  </div>
+</main>
+
+<footer class="esh-footer mt-auto">
+
+  <div class="esh-newsletter py-4 border-top border-white border-opacity-10">
+    <div class="container">
+      <div class="row align-items-center">
+        <div class="col-md-6 mb-3 mb-md-0 text-white">
+          <h5 class="m-0 fw-bold d-flex align-items-center">
+            <i class="bi bi-envelope-paper-fill me-2 fs-4"></i>
+            <span>Đăng ký nhận bản tin</span>
+          </h5>
+          <div class="small opacity-75 mt-1">Đừng bỏ lỡ hàng ngàn voucher hấp dẫn từ eShop</div>
+        </div>
+        <div class="col-md-6">
+          <form class="input-group">
+            <input type="email" class="form-control py-2" placeholder="Nhập địa chỉ email của bạn..."
+              aria-label="Email">
+            <button class="btn btn-dark px-4" type="button">ĐĂNG KÝ</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-dark text-light pt-5 pb-4" style="background-color: #1f1f1f !important;">
+    <div class="container">
+      <div class="row g-4">
+
+        <div class="col-md-4 col-lg-3">
+          <h6 class="footer-heading">eShop Official</h6>
+          <p class="small text-secondary mb-3">
+            Hệ thống bán lẻ thiết bị công nghệ uy tín số 1 Việt Nam. Cam kết 100% chính hãng, hoàn tiền 111% nếu giả.
+          </p>
+          <h6 class="footer-heading mt-4 mb-2" style="font-size: 0.75rem;">Kết nối với chúng tôi</h6>
+          <div class="d-flex gap-2">
+            <a href="https://www.facebook.com/tobezero01" target="_blank" class="social-link"><i
+                class="fa fa-facebook"></i></a>
+            <a href="" class="social-link"><i class="fa fa-youtube"></i></a>
+            <a href="" class="social-link"><i class="fa fa-instagram"></i></a>
+          </div>
+        </div>
+
+        <div class="col-md-4 col-lg-3">
+          <h6 class="footer-heading">Hỗ trợ khách hàng</h6>
+          <ul class="list-unstyled small d-flex flex-column gap-2">
+            <li><a href="#" class="footer-link">Trung tâm trợ giúp</a></li>
+            <li><a href="#" class="footer-link">Hướng dẫn mua hàng</a></li>
+            <li><a href="#" class="footer-link">Thanh toán & Giao hàng</a></li>
+            <li><a href="#" class="footer-link">Chính sách đổi trả</a></li>
+            <li><a href="#" class="footer-link">Tra cứu bảo hành</a></li>
+            <li><a href="#" class="footer-link">Báo cáo sự cố</a></li>
+          </ul>
+        </div>
+
+        <div class="col-md-4 col-lg-3">
+          <h6 class="footer-heading">Về eShop</h6>
+          <ul class="list-unstyled small d-flex flex-column gap-2">
+            <li><a href="#" class="footer-link">Giới thiệu về eShop</a></li>
+            <li><a href="#" class="footer-link">Tuyển dụng</a></li>
+            <li><a href="#" class="footer-link">Điều khoản sử dụng</a></li>
+            <li><a href="#" class="footer-link">Chính sách bảo mật</a></li>
+            <li><a href="#" class="footer-link">Kênh người bán</a></li>
+            <li><a href="#" class="footer-link">Flash Sales</a></li>
+          </ul>
+        </div>
+
+        <div class="col-md-12 col-lg-3">
+          <h6 class="footer-heading">Liên hệ</h6>
+          <ul class="list-unstyled small text-secondary">
+            <li class="mb-3 d-flex">
+              <span class="contact-icon me-2"><i class="bi bi-geo-alt-fill"></i></span>
+              <span>Tầng 12, Tòa nhà Tech, Quận Cầu Giấy, Hà Nội</span>
+            </li>
+            <li class="mb-3 d-flex">
+              <span class="contact-icon me-2"><i class="bi bi-envelope-fill"></i></span>
+              <span>supportEshop.com</span>
+            </li>
+            <li class="mb-3 d-flex">
+              <span class="contact-icon me-2"><i class="bi bi-telephone-fill"></i></span>
+              <span class="text-white fw-bold">1900 1234</span>
+            </li>
+          </ul>
+          <div class="mt-3">
+            <img [src]="'assets/bct.png'" alt="Bo Cong Thuong" style="width: 120px; opacity: 0.8"
+              (error)="img.style.display='none'" #img>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bg-black text-secondary py-3 text-center" style="font-size: 0.8rem;">
+    <div class="container border-top border-secondary border-opacity-25 pt-3">
+      <div class="row">
+        <div class="col-12 mb-1">&copy; 2025 Công ty TNHH eShop.</div>
+        <div class="col-12 small">Địa chỉ: Hà Nội, Việt Nam. Mã số doanh nghiệp: 0101234567.</div>
+      </div>
+    </div>
+  </div>
+</footer>

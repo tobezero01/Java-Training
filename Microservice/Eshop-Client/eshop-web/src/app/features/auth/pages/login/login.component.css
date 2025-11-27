@@ -1,0 +1,55 @@
+/* Background toàn trang: Màu xám nhẹ hoặc hoa văn mờ */
+.login-wrapper {
+  background-color: #f8f9fa;
+  /* Bootstrap Gray-100 */
+  /* Nếu muốn sang hơn, dùng background gradient nhẹ: */
+  /* background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); */
+}
+
+/* Hiệu ứng Text Gradient cho Logo */
+.text-gradient {
+  background: -webkit-linear-gradient(45deg, #ff5722, #d68a72);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Nút bấm Gradient chủ đạo */
+.btn-gradient {
+  background: linear-gradient(90deg, #ff5722, #d68a72);
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.btn-gradient:hover:not(:disabled) {
+  background: linear-gradient(90deg, #e64a19, #bf360c);
+  transform: translateY(-2px);
+  /* Hiệu ứng nhấc nút lên */
+  box-shadow: 0 5px 15px rgba(255, 87, 34, 0.3);
+}
+
+.btn-gradient:disabled {
+  opacity: 0.7;
+}
+
+/* Tùy chỉnh Input Form Floating */
+.form-floating>.form-control:focus {
+  border-color: #ff5722;
+  /* Viền cam khi focus */
+  box-shadow: 0 0 0 0.25rem rgba(255, 87, 34, 0.15);
+  /* Shadow cam nhạt */
+}
+
+.form-floating>label {
+  color: #999;
+}
+
+/* Link hover effect */
+.link-hover {
+  color: #6c757d;
+  transition: color 0.2s;
+}
+
+.link-hover:hover {
+  color: #ff5722;
+  /* Hover chuyển màu cam */
+}

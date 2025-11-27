@@ -1,28 +1,30 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { ProductCardComponent } from "../../components/product-card/product-card.component";
-import { CategoryTreeComponent } from "../../components/category-tree/category-tree.component";
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ProductCardComponent } from '../../components/product-card/product-card.component';
+import { CategoryTreeComponent } from '../../components/category-tree/category-tree.component';
 import { CatalogService } from '../../../../core/services/catalog/catalog.service';
 import { clampPage } from '../../../../core/helpers/pagination.helpers';
 import { CategoryDto } from '../../models/category-dto.model';
 import { CategoryNodeDto } from '../../models/category-node-dto.model';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-product-list',
   standalone: true,
-  imports: [ProductCardComponent, CategoryTreeComponent,CommonModule],
+  imports: [ProductCardComponent, CategoryTreeComponent, CommonModule],
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.css'
 })
-export class ProductListComponent implements OnInit{
+export class ProductListComponent implements OnInit {
 
   private catalogService = inject(CatalogService);
   private ar = inject(ActivatedRoute);
   private router = inject(Router);
+  private toastr = inject(ToastrService);
 
   // state
-  catTree = signal<any[]>([]);
+  catTree = signal<CategoryNodeDto[]>([]);
   topCats = signal<CategoryDto[]>([]);
   selectedCat = signal<CategoryDto | null>(null);
   childCats = signal<CategoryDto[]>([]);
@@ -33,16 +35,27 @@ export class ProductListComponent implements OnInit{
   sort = signal('name|asc');
   keyword = signal('');
 
+  loadingTree = signal(false);
+  loadingProducts = signal(false);
+
   async ngOnInit(): Promise<void> {
+    // load tree + topCats 1 lần, có catch lỗi rõ ràng
+    this.loadingTree.set(true);
+    try {
+      const [tree, top] = await Promise.all([
+        this.catalogService.getCategoryTree(),
+        this.catalogService.getTopCategories()
+      ]);
+      this.catTree.set(tree);
+      this.topCats.set(top);
+    } catch (err) {
+      console.error('Lỗi tải danh mục:', err);
+      this.toastr.error('Không tải được danh mục. Vui lòng thử lại sau.');
+    } finally {
+      this.loadingTree.set(false);
+    }
 
-    const tree = await this.catalogService.getCategoryTree();
-    this.catTree.set(tree);
-
-    const top = await this.catalogService.getTopCategories();
-    this.topCats.set(top);
-
-    this.catalogService.getCategoryTree().then(tr => this.catTree.set(tr));
-
+    // lắng nghe query params để load sản phẩm
     this.ar.queryParamMap.subscribe(async query => {
       const catId = Number(query.get('catId') || 0) || undefined;
       const page = Number(query.get('page') || 1);
@@ -54,41 +67,52 @@ export class ProductListComponent implements OnInit{
       this.keyword.set(kw);
       this.page.set(Math.max(page, 1));
 
-      if (kw) {
-        this.selectedCat.set(null);
-        this.childCats.set([]);
-        const res = await this.catalogService.searchProducts(kw, page);
-        this.items.set(res.content);
-        this.totalPages.set(res.totalPages);
-        this.page.set(clampPage(res.page, res.totalPages));
-        return;
-      }
+      this.loadingProducts.set(true);
 
-      if (catId) {
-        this.setSelectedAndChildren(catId);
-        const res = await this.catalogService.listProductsByCategory(catId, page, s, d);
-        this.items.set(res.content);
-        this.totalPages.set(res.totalPages);
-        this.page.set(clampPage(res.page, res.totalPages));
-        return;
-      }
+      try {
+        if (kw) {
+          this.selectedCat.set(null);
+          this.childCats.set([]);
+          const res = await this.catalogService.searchProducts(kw, page);
+          this.items.set(res.content);
+          this.totalPages.set(res.totalPages);
+          this.page.set(clampPage(res.page, res.totalPages));
+          return;
+        }
+
+        if (catId) {
+          this.setSelectedAndChildren(catId);
+          const res = await this.catalogService.listProductsByCategory(catId, page, s, d);
+          this.items.set(res.content);
+          this.totalPages.set(res.totalPages);
+          this.page.set(clampPage(res.page, res.totalPages));
+          return;
+        }
 
         // nếu chưa chọn cat và không search → hiển thị top-level category gợi ý
-      this.selectedCat.set(null);
-      this.childCats.set([]);
-      this.items.set([]);
-      this.totalPages.set(1);
-      this.page.set(1);
-
+        this.selectedCat.set(null);
+        this.childCats.set([]);
+        this.items.set([]);
+        this.totalPages.set(1);
+        this.page.set(1);
+      } catch (err) {
+        console.error('Lỗi tải sản phẩm:', err);
+        this.toastr.error('Không tải được sản phẩm. Vui lòng thử lại sau.');
+      } finally {
+        this.loadingProducts.set(false);
+      }
     });
   }
+
   goSearch(q: string) {
-    this.router.navigate([], { queryParams: { q, page: 1 }, queryParamsHandling: 'merge' });
+    this.router.navigate([], { queryParams: { q, page: 1, catId: null }, queryParamsHandling: 'merge' });
   }
+
   changeSort(val: string) {
     const [s, d] = val.split('|');
     this.router.navigate([], { queryParams: { sort: s, dir: d, page: 1 }, queryParamsHandling: 'merge' });
   }
+
   goPage(p: number) {
     this.router.navigate([], { queryParams: { page: p }, queryParamsHandling: 'merge' });
   }
@@ -112,7 +136,7 @@ export class ProductListComponent implements OnInit{
       hasChildren: node.children?.length > 0
     });
 
-    const childs = (node.children || []).map< CategoryDto >(c => ({
+    const childs = (node.children || []).map<CategoryDto>(c => ({
       id: c.id,
       name: c.name,
       alias: c.alias,
@@ -121,6 +145,7 @@ export class ProductListComponent implements OnInit{
     }));
     this.childCats.set(childs);
   }
+
   private findNodeById(tree: CategoryNodeDto[], id: number): CategoryNodeDto | null {
     for (const n of tree) {
       if (n.id === id) return n;

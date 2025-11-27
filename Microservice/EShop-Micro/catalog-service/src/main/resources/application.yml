@@ -55,7 +55,12 @@ app:
   security:
     enabled: true
 
-
+minio:
+  endpoint: http://minio:9000
+  access-key: ${MINIO_ACCESS_KEY:minio}
+  secret-key: ${MINIO_SECRET_KEY:minio123456}
+  bucket: exports
+  region: us-east-1
 
 jobs:
   categoryHierarchy:

@@ -27,9 +27,12 @@ import { AddressFormComponent } from './features/address/pages/address-form/addr
 import { PaypalReturnComponent } from './features/checkout/pages/paypal-return/paypal-return.component';
 import { PaypalCancelComponent } from './features/checkout/pages/paypal-cancel/paypal-cancel.component';
 import { PaypalSuccessComponent } from './features/checkout/pages/paypal-success/paypal-success.component';
+import { ContactComponent } from './features/static/pages/contact/contact.component';
+import { PolicyComponent } from './features/static/pages/policy/policy.component';
+import { OrderDetailComponent } from './features/orders/pages/order-detail/order-detail.component';
 
 export const routes: Routes = [
-  { path: '', redirectTo: 'login', pathMatch: 'full' },
+  { path: '', redirectTo: 'catalog', pathMatch: 'full' },
 
   {
     path: '',
@@ -39,6 +42,8 @@ export const routes: Routes = [
       { path: 'login', component: LoginComponent },
       { path: 'forget-password', component: ForgetPasswordComponent },
       { path: 'reset-password', component: ResetPasswordComponent },
+      { path: 'contact', component: ContactComponent },
+      { path: 'policy', component: PolicyComponent },
 
       // FEATURES (không lazy; trực tiếp path + component)
       { path: 'catalog', component: ProductListComponent },
@@ -61,6 +66,9 @@ export const routes: Routes = [
       { path: 'payment/paypal/return', component: PaypalReturnComponent, canActivate: [authGuard] },
       { path: 'payment/paypal/cancel', component: PaypalCancelComponent, canActivate: [authGuard] },
       { path: 'payment/paypal/success', component: PaypalSuccessComponent, canActivate: [authGuard] },
+
+      { path: 'orders', component: OrdersComponent, canActivate: [authGuard] },
+      { path: 'orders/:orderNumber', component: OrderDetailComponent, canActivate: [authGuard] },
     ]
   },
 
@@ -68,6 +76,5 @@ export const routes: Routes = [
   { path: 'access-denied', component: AccessDeniedComponent },
   { path: 'server-error', component: ServerErrorComponent },
   { path: '**', redirectTo: 'not-found' }
-  // Cuối cùng: wildcard -> /login
-  //{ path: '**', redirectTo: 'login' }
+
 ];

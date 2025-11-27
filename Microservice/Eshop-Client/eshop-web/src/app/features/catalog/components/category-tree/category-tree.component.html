@@ -1,9 +1,19 @@
-<ul class="list-unstyled">
-  <li *ngFor="let c of tree" class="mb-1">
-    <a [routerLink]="['/catalog']" [queryParams]="{catId: c.id}">
-      {{ c.name }}
-    </a>
-    <app-category-tree *ngIf="c.children.length" [tree]="c.children" class="ms-3 mt-1 d-block">
-    </app-category-tree>
+<ul class="list-unstyled cat-tree">
+  <li *ngFor="let c of tree" class="cat-item">
+
+    <div class="d-flex align-items-center justify-content-between cat-link-wrapper">
+      <a [routerLink]="['/catalog']" [queryParams]="{catId: c.id}" routerLinkActive="active-cat"
+        [routerLinkActiveOptions]="{exact: false}" class="cat-link text-truncate flex-grow-1">
+        {{ c.name }}
+      </a>
+
+      <span *ngIf="c.children && c.children.length" class="toggle-btn" (click)="toggle(c.id, $event)">
+        {{ isExpanded(c.id) ? '&#9660;' : '&#9654;' }}
+      </span>
+    </div>
+
+    <div *ngIf="c.children.length && isExpanded(c.id)" class="ms-3 ps-2 border-start child-tree">
+      <app-category-tree [tree]="c.children"></app-category-tree>
+    </div>
   </li>
 </ul>

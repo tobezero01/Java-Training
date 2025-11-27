@@ -1,6 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CartService } from '../../../../core/services/cart/cart.service';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { NgbModal, NgbModalModule } from '@ng-bootstrap/ng-bootstrap';
 import { CommonModule } from '@angular/common';
 import { CartGetResponseView } from '../../models/cart-get-response-view.model';
@@ -10,7 +10,7 @@ import { AlertModalComponent } from '../../../../shared/modals/alert-modal.compo
 @Component({
   selector: 'app-cart',
   standalone: true,
-  imports: [CommonModule, NgbModalModule],
+  imports: [CommonModule, NgbModalModule, RouterLink],
   templateUrl: './cart.component.html',
   styleUrl: './cart.component.css'
 })

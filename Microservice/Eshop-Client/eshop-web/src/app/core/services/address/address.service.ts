@@ -5,34 +5,42 @@ import { Address } from '../../../features/address/models/address.model';
 import { API } from '../../constants/api-endpoints';
 import { AddressCreateRequest } from '../../../features/address/models/address-create-request.model';
 import { AddressUpdateRequest } from '../../../features/address/models/address-update-request.model';
+import { environment } from '../../../../environments/environment.development';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AddressService {
   private http = inject(HttpClient);
+  private base = environment.baseGateway;   // http://localhost:8080
 
   list(): Observable<Address[]> {
-    return this.http.get<Address[]>(API.ADDRESSES.ROOT);
+    // GET /api/addresses
+    return this.http.get<Address[]>(`${this.base}${API.ADDRESS.ROOT}`);
   }
 
   getDefault(): Observable<Address> {
-    return this.http.get<Address>(API.ADDRESSES.DEFAULT);
+    // GET /api/addresses/default
+    return this.http.get<Address>(`${this.base}${API.ADDRESS.ROOT}/default`);
   }
 
   create(req: AddressCreateRequest): Observable<Address> {
-    return this.http.post<Address>(API.ADDRESSES.ROOT, req);
+    // POST /api/addresses
+    return this.http.post<Address>(`${this.base}${API.ADDRESS.ROOT}`, req);
   }
 
   update(id: number, req: AddressUpdateRequest): Observable<Address> {
-    return this.http.put<Address>(`${API.ADDRESSES.ROOT}/${id}`, req);
+    // PUT /api/addresses/{id}
+    return this.http.put<Address>(`${this.base}${API.ADDRESS.BY_ID(id)}`, req);
   }
 
   remove(id: number): Observable<void> {
-    return this.http.delete<void>(`${API.ADDRESSES.ROOT}/${id}`);
+    // DELETE /api/addresses/{id}
+    return this.http.delete<void>(`${this.base}${API.ADDRESS.BY_ID(id)}`);
   }
 
   setDefault(id: number): Observable<void> {
-    return this.http.put<void>(`${API.ADDRESSES.ROOT}/${id}/default`, {});
+    // PUT /api/addresses/{id}/default
+    return this.http.put<void>(`${this.base}${API.ADDRESS.BY_ID(id)}/default`, {});
   }
 }

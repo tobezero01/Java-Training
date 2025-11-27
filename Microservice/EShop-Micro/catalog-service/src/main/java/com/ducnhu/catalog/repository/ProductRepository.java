@@ -16,14 +16,21 @@ import java.util.List;
 public interface ProductRepository extends JpaRepository<Product, Integer> {
 
     @Query("""
-            select p.id as id, p.name as name, p.alias as alias, p.price as price,
-                      p.discountPrice as discountPrice, p.inStock as inStock,
-                      p.averageRating as averageRating, p.reviewCount as reviewCount,
-                      p.createdTime as createdTime, c.name as categoryName
-            from Product p left join p.category c
-            where (:afterId is null or p.id > :afterId)
-            order by p.id asc
-            """)
+    select p.id as id,
+           p.name as name,
+           p.alias as alias,
+           p.price as price,
+           (p.price * (1 - p.discountPercent / 100.0)) as discountPrice,
+           p.inStock as inStock,
+           p.averageRating as averageRating,
+           p.reviewCount as reviewCount,
+           p.createdTime as createdTime,
+           c.name as categoryName
+    from Product p
+    left join p.category c
+    where (:afterId is null or p.id > :afterId)
+    order by p.id asc
+    """)
     List<ProductExportView> scanAfterId(@Param("afterId") Integer afterId, Pageable pageable);
 
     /** Lấy min/max id để chia range nếu muốn chạy nhiều worker */

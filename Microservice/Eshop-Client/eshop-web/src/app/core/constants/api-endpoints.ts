@@ -25,26 +25,44 @@ export const API = {
     SEARCH:    (keyword: string, page=1) =>
       `/api/products/search?keyword=${encodeURIComponent(keyword)}&page=${page}`,
   },
-  CART: {
-    ROOT: '/api/cart',
-    ITEMS: '/api/cart/items'
+      CART: {
+    // GET & POST /api/cart/items
+    VIEW: '/api/cart/items',
+    // PATCH /api/cart/items/{productId}
+    UPDATE_QTY: (productId: number) => `/api/cart/items/${productId}`,
+    // DELETE /api/cart/items/{productId}
+    REMOVE_ITEM: (productId: number) => `/api/cart/items/${productId}`,
+    // DELETE /api/cart
+    CLEAR: '/api/cart'
   },
-  ADDRESSES: {
+
+  ADDRESS: {
     ROOT: '/api/addresses',
-    DEFAULT: '/api/addresses/default'
+    BY_ID: (id: number) => `/api/addresses/${id}`
   },
+
+
   CHECKOUT: {
     SUMMARY: (addressId?: number) =>
-      addressId ? `/api/checkout/summary?addressId=${addressId}` : `/api/checkout/summary`,
+      addressId
+        ? `/api/checkout/summary?addressId=${addressId}`
+        : `/api/checkout/summary`,
     PLACE_ORDER: `/api/checkout/place-order`,
     CANCEL_ORDER: (orderNumber: string, reason = 'User requested') =>
       `/api/checkout/cancel-order?orderNumber=${encodeURIComponent(orderNumber)}&reason=${encodeURIComponent(reason)}`
   },
+
   PAYMENTS: {
     PAYPAL: {
-      CREATE: `/api/payments/paypal/create`,    // POST x-www-form-urlencoded: addressId, returnUrl, cancelUrl
-      CAPTURE: `/api/payments/paypal/capture`,  // POST: paypalOrderId, orderNumber
-      CANCEL: `/api/payments/paypal/cancel`     // POST: orderNumber, (optional) paypalOrderId, reason
+      CREATE: `/api/payments/paypal/create`,
+      CAPTURE: `/api/payments/paypal/capture`,
+      CANCEL: `/api/payments/paypal/cancel`
     }
+  },
+  ORDERS: {
+    // GET /api/orders/my?page=&size=
+    MY_ORDERS: '/api/orders',
+    // GET /api/orders/{orderNumber}
+    DETAIL: (orderNumber: string) => `/api/orders/${orderNumber}`
   }
 }

@@ -43,7 +43,7 @@ export class AuthService {
   }
 
   updateProfile(req: ProfileUpdateRequest) {
-    return this.http.patch<ProfileResponse>(`${this.base}${API.AUTH.ME_PROFILE}`, req);
+    return this.http.patch<ProfileResponse>(`${this.base}${API.AUTH.ME}`, req);
   }
 
   forgotPassword(req: ForgotPasswordRequest) {

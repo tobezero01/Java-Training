@@ -1,0 +1,58 @@
+/* Container chung */
+.cat-tree {
+  font-size: 0.95rem;
+}
+
+.cat-item {
+  margin-bottom: 2px;
+}
+
+/* Wrapper cho dòng link */
+.cat-link-wrapper {
+  padding: 6px 10px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.cat-link-wrapper:hover {
+  background-color: #f8f9fa;
+  /* Hover nhẹ màu xám */
+}
+
+/* Style cho thẻ A */
+.cat-link {
+  text-decoration: none;
+  color: #444;
+  display: block;
+}
+
+.cat-link:hover {
+  color: #f57224;
+  /* Màu cam thương hiệu khi hover text */
+}
+
+/* Class active được Angular tự thêm vào */
+.active-cat {
+  color: #f57224 !important;
+  font-weight: 600;
+}
+
+/* Nút mũi tên toggle */
+.toggle-btn {
+  font-size: 0.8rem;
+  color: #999;
+  padding: 0 5px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.toggle-btn:hover {
+  color: #f57224;
+}
+
+/* Đường kẻ dọc nối các danh mục con (tạo visual hierarchy) */
+.child-tree {
+  border-left-color: #eee !important;
+  margin-top: 4px;
+}

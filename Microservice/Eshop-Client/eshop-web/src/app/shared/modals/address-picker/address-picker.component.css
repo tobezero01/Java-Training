@@ -1,0 +1,114 @@
+/* Style cho Address Card */
+.address-card {
+  transition: all 0.2s ease-in-out;
+  border: 1px solid transparent;
+  /* Viền ẩn */
+}
+
+/* Hiệu ứng khi hover: Viền cam + Nền hơi cam + Radio được check */
+.address-card:hover {
+  border-color: #ff5722;
+  /* Màu cam Shopee */
+  background-color: #fffdfb;
+  /* Nền cam cực nhạt */
+  transform: translateY(-1px);
+}
+
+.address-card:hover .form-check-input {
+  border-color: #ff5722;
+  background-color: #ff5722;
+  /* Giả lập trạng thái checked khi hover */
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23fff'/%3e%3c/svg%3e");
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Badge mặc định style nhẹ nhàng */
+.bg-danger-subtle {
+  background-color: #ffebe9 !important;
+  /* Màu nền đỏ nhạt */
+}
+
+/* --- ADDRESS CARD --- */
+.address-card {
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  /* Viền ẩn mặc định */
+  position: relative;
+}
+
+/* Hover: Viền cam + Đổ bóng nhẹ */
+.address-card:hover {
+  border-color: #ff5722;
+  /* Cam Shopee */
+  background-color: #fffdfb;
+  /* Nền cam rất nhạt */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Active State (Khi được chọn) */
+.active-address {
+  border-color: #ff5722 !important;
+  background-color: #fffdfb;
+}
+
+.active-address .form-check-input {
+  background-color: #ff5722;
+  border-color: #ff5722;
+}
+
+/* --- SCROLL BAR (Làm đẹp thanh cuộn modal) --- */
+.scrollable-body {
+  max-height: 60vh;
+  /* Giới hạn chiều cao modal */
+  overflow-y: auto;
+  /* Cho phép cuộn */
+}
+
+/* Custom Scrollbar cho Chrome/Safari/Edge */
+.scrollable-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollable-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+.scrollable-body::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+.scrollable-body::-webkit-scrollbar-thumb:hover {
+  background: #aaa;
+}
+
+/* --- UTILS --- */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+/* Radio button màu cam */
+.form-check-input:checked {
+  background-color: #ff5722;
+  border-color: #ff5722;
+}
+
+/* Nút sửa "Sửa" ẩn hiện khi hover */
+.btn-edit {
+  opacity: 0;
+  transition: opacity 0.2s;
+  text-decoration: none;
+}
+
+.address-card:hover .btn-edit {
+  opacity: 1;
+}
+
+.btn-edit:hover {
+  color: #ff5722 !important;
+  text-decoration: underline;
+}

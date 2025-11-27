@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 public class MinioProperties {
     private String endpoint;
     private String accessKey;
-    private String secretKet;
+    private String secretKey;
     private String bucket;
     private String region;
 

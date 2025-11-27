@@ -1,0 +1,51 @@
+/* Style chung cho Card */
+.address-card {
+  transition: all 0.3s ease;
+  border: 1px solid transparent;
+  /* Viền ẩn */
+  background-color: #fff;
+}
+
+/* Hover: Card nổi lên nhẹ */
+.address-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Style riêng cho Card Mặc định (Viền cam nhẹ + nền cam rất nhạt) */
+.default-card {
+  border: 1px solid #ff5722;
+  /* Màu cam Shopee */
+  background-color: #fffdfb;
+}
+
+/* Text địa chỉ */
+.address-text {
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Custom Link Button (Thay vì nút button thô kệch) */
+.btn-link-action {
+  background: none;
+  border: none;
+  padding: 0;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.btn-link-action:hover {
+  text-decoration: underline;
+}
+
+.btn-link-action.text-primary:hover {
+  color: #0b5ed7 !important;
+  /* Đậm hơn khi hover */
+}
+
+.btn-link-action.text-secondary:hover {
+  color: #dc3545 !important;
+  /* Hover xóa thành màu đỏ */
+}

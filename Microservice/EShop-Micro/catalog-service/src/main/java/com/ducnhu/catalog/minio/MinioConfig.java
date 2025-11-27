@@ -9,10 +9,14 @@ import org.springframework.context.annotation.Configuration;
 @EnableConfigurationProperties(MinioProperties.class)
 public class MinioConfig {
     @Bean
-    public MinioClient minioClient(MinioProperties properties) {
+    public MinioClient minioClient(MinioProperties p) {
+        System.out.println("MinIO props: endpoint=" + p.getEndpoint()
+                + ", accessKey=" + p.getAccessKey()
+                + ", secretKey=" + p.getSecretKey());
         return MinioClient.builder()
-                .endpoint(properties.getEndpoint())
-                .credentials(properties.getAccessKey(), properties.getSecretKet())
+                .endpoint(p.getEndpoint())
+                .credentials(p.getAccessKey(), p.getSecretKey())
                 .build();
     }
 }
+

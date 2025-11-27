@@ -5,11 +5,12 @@ import { AuthService } from '../../../../core/services/auth/auth.service';
 import { ToastrService } from 'ngx-toastr';
 import { ProfileResponse } from '../../../auth/models/profile-response.model';
 import { ProfileUpdateRequest } from '../../../auth/models/profile-update-request.model';
+import { RouterLink, RouterModule } from "@angular/router";
 
 @Component({
   selector: 'app-account',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, RouterModule],
   templateUrl: './account.component.html',
   styleUrl: './account.component.css'
 })

@@ -18,6 +18,8 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+
 @RestController
 @RequestMapping("/api/cart")
 @RequiredArgsConstructor
@@ -26,15 +28,10 @@ public class CartController {
     private final ShoppingCartService cart;
     private final AuthClient authClient;
 
-    private Integer meId(HttpServletRequest req) {
-        String authz = req.getHeader("Authorization");
-        if (authz == null || authz.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing Authorization");
-        }
-        MeResponse me = authClient.me(authz);
-        if (me == null || me.id() == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid JWT");
-        }
+    private Integer meId() {
+        MeResponse me = authClient.me();
+        if (me == null || me.id() == null)
+            throw new ResponseStatusException(UNAUTHORIZED, "Missing/invalid token");
         return me.id();
     }
 
@@ -42,8 +39,8 @@ public class CartController {
      * GET /api/cart/items — trả toàn bộ giỏ của người dùng hiện tại (customerId lấy từ /me).
      */
     @GetMapping("/items")
-    public CartGetResponse getAll(HttpServletRequest request) {
-        Integer customerId = meId(request);
+    public CartGetResponse getAll() {
+        Integer customerId = meId();
 
         List<CartItem> items = cart.list(customerId);
 
@@ -71,8 +68,8 @@ public class CartController {
      * POST /api/cart/items — thêm 1 sản phẩm vào giỏ.
      */
     @PostMapping("/items")
-    public ResponseEntity<CartActionResp> add(@RequestBody AddReq req, HttpServletRequest request) {
-        AddResult r = cart.addProduct(meId(request), req.productId(), req.quantity());
+    public ResponseEntity<CartActionResp> add(@RequestBody AddReq req) {
+        AddResult r = cart.addProduct(meId(), req.productId(), req.quantity());
         return ResponseEntity.ok(new CartActionResp(req.productId(), r.quantity(), r.subtotal(), "Add to cart"));
     }
 
@@ -83,7 +80,7 @@ public class CartController {
     public ResponseEntity<CartActionResp> update(@PathVariable("productId") Integer productId,
                                                  @RequestBody UpdateReq req,
                                                  HttpServletRequest request) {
-        float subtotal = cart.updateQuantity(meId(request), productId, req.quantity());
+        float subtotal = cart.updateQuantity(meId(), productId, req.quantity());
         return ResponseEntity.ok(new CartActionResp(productId, req.quantity(), subtotal, "Quantity updated"));
     }
 
@@ -91,8 +88,8 @@ public class CartController {
      * DELETE /api/cart/items/{productId} — xóa 1 dòng khỏi giỏ.
      */
     @DeleteMapping("/items/{productId}")
-    public ResponseEntity<CartActionResp> remove(@PathVariable("productId") Integer productId, HttpServletRequest request) {
-        cart.remove(meId(request), productId);
+    public ResponseEntity<CartActionResp> remove(@PathVariable("productId") Integer productId) {
+        cart.remove(meId(), productId);
         return ResponseEntity.ok(new CartActionResp(productId, 0, 0f, "Item removed"));
     }
 
@@ -100,8 +97,8 @@ public class CartController {
      * DELETE /api/cart — xóa toàn bộ giỏ.
      */
     @DeleteMapping
-    public ResponseEntity<CartActionResp> clear(HttpServletRequest request) {
-        cart.clear(meId(request));
+    public ResponseEntity<CartActionResp> clear() {
+        cart.clear(meId());
         return ResponseEntity.ok(new CartActionResp(null, 0, 0f, "Cart cleared"));
     }
 }

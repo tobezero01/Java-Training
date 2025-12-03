@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import static org.springframework.http.HttpStatus.UNAUTHORIZED;
+
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
@@ -20,29 +22,23 @@ public class CustomerOrderController {
     private final CustomerOrderQueryService service;
     private final AuthClient authClient;
 
-    private Integer meId(HttpServletRequest req) {
-        String authz = req.getHeader("Authorization");
-        if (authz == null || authz.isBlank()) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Missing Authorization");
-        }
-        MeResponse me = authClient.me(authz);
-        if (me == null || me.id() == null) {
-            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid JWT");
-        }
+    private Integer meId() {
+        MeResponse me = authClient.me();
+        if (me == null || me.id() == null)
+            throw new ResponseStatusException(UNAUTHORIZED, "Missing/invalid token");
         return me.id();
     }
 
     @GetMapping
     public PageResponse<OrderSummaryDTO> list(
             @RequestParam(name = "page", defaultValue = "1") int page,
-            @RequestParam(name = "size", defaultValue = "10") int size,
-            HttpServletRequest req) {
-        return service.listForCustomer(meId(req), page, size);
+            @RequestParam(name = "size", defaultValue = "10") int size) {
+        return service.listForCustomer(meId(), page, size);
     }
 
     @GetMapping("/{orderNumber}")
-    public OrderDetailDTO detail(@PathVariable("orderNumber") String orderNumber, HttpServletRequest req) {
-        OrderDetailDTO dto = service.getDetail(orderNumber, meId(req));
+    public OrderDetailDTO detail(@PathVariable("orderNumber") String orderNumber) {
+        OrderDetailDTO dto = service.getDetail(orderNumber, meId());
         if (dto == null) {
             throw new org.springframework.web.server.ResponseStatusException(
                     org.springframework.http.HttpStatus.NOT_FOUND, "Order not found");

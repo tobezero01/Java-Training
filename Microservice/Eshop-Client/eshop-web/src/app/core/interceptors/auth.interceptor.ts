@@ -1,8 +1,6 @@
 import { HttpInterceptorFn } from '@angular/common/http';
 import { environment } from '../../../environments/environment.development';
 import { API } from '../constants/api-endpoints';
-import { inject } from '@angular/core';
-import { TokenStorageService } from '../services/token-storage/token-storage.service';
 
 const skipList = new Set([
   `${environment.baseGateway}${API.AUTH.LOGIN}`,
@@ -11,15 +9,14 @@ const skipList = new Set([
 ]);
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const tokenStore = inject(TokenStorageService);
-  const token = tokenStore.getToken();
-
   const isApi = req.url.startsWith(environment.baseGateway);
-  const isSkip = skipList.has(req.url);
 
-  const cloned = (!isApi || isSkip || !token) ? req : req.clone({
-    setHeaders: { Authorization: `Bearer ${token}` }
-  });
+  // Nếu gọi API -> Luôn bật withCredentials để trình duyệt gửi Cookie đi kèm
+  if (isApi) {
+    req = req.clone({
+      withCredentials: true
+    });
+  }
 
-  return next(cloned);
+  return next(req);
 };

@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../../environments/environment.development';
 import { LoginRequest } from '../../../features/auth/models/login-request.model';
 import { JwtResponse } from '../../../features/auth/models/jwt-response.model';
@@ -11,6 +11,8 @@ import { ForgotPasswordRequest } from '../../../features/auth/models/forgot-pass
 import { ResetPasswordRequest } from '../../../features/auth/models/reset-password-request.model';
 import { SimpleMessage } from '../../../features/auth/models/simple-message.model';
 import { RegisterRequest } from '../../../features/auth/models/register-request.model';
+import { AuthStoreService } from '../auth-store/auth-store.service';
+import { tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -19,11 +21,20 @@ export class AuthService {
 
   private readonly base = environment.baseGateway;
 
+  private authStore = inject(AuthStoreService);
+
   constructor(private readonly http: HttpClient) { }
 
   login(request: LoginRequest) {
-    return this.http.post<JwtResponse>(`${this.base}${API.AUTH.LOGIN}`,
-      request, { withCredentials: true });
+    // Backend sẽ set Cookie, frontend không cần nhận token trả về để lưu nữa
+    return this.http.post<JwtResponse>(`${this.base}${API.AUTH.LOGIN}`, request)
+      .pipe(
+        tap((res) => {
+          // Login thành công -> Set trạng thái đã đăng nhập
+          this.authStore.authenticated.set(true);
+
+        })
+      );
   }
 
   refresh() {
@@ -35,7 +46,14 @@ export class AuthService {
   }
 
   logout() {
-    return this.http.post<void>(`${this.base}${API.AUTH.LOGOUT}`, {}, { withCredentials: true });
+    return this.http.post<void>(`${this.base}${API.AUTH.LOGOUT}`, {})
+      .pipe(
+        tap(() => {
+          // Logout thành công -> Xóa state, trình duyệt tự xóa cookie
+          this.authStore.authenticated.set(false);
+          this.authStore.me.set(null);
+        })
+      );
   }
 
   me() {

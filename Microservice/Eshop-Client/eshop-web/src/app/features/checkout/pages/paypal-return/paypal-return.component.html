@@ -8,7 +8,7 @@
         <div class="mb-4 position-relative d-inline-block">
           <div class="spinner-border text-primary" style="width: 4rem; height: 4rem;" role="status"></div>
           <div class="position-absolute top-50 start-50 translate-middle">
-            <i class="bi bi-paypal text-primary fs-4"></i>
+            <i class="fab fa-paypal text-primary fs-4"></i>
           </div>
         </div>
         <h4 class="fw-bold text-dark mb-2">Đang xác thực...</h4>
@@ -19,8 +19,8 @@
 
       <div *ngIf="!loading && ok" class="scale-in">
         <div class="mb-4">
-          <div class="icon-circle bg-success-subtle mx-auto">
-            <i class="bi bi-check-lg text-success" style="font-size: 3rem;"></i>
+          <div class="icon-circle bg-success-subtle mx-auto d-flex align-items-center justify-content-center">
+            <i class="fas fa-check text-success" style="font-size: 3rem;"></i>
           </div>
         </div>
 
@@ -32,7 +32,7 @@
         <div class="bg-light rounded p-3 mb-4 border border-dashed">
           <div class="d-flex justify-content-between small mb-1">
             <span class="text-muted">Phương thức:</span>
-            <span class="fw-bold text-primary"><i class="bi bi-paypal me-1"></i>PayPal</span>
+            <span class="fw-bold text-primary"><i class="fab fa-paypal me-1"></i>PayPal</span>
           </div>
           <div class="d-flex justify-content-between small">
             <span class="text-muted">Trạng thái:</span>
@@ -41,14 +41,14 @@
         </div>
 
         <a routerLink="/orders" class="btn btn-primary btn-lg w-100 shadow-sm fw-bold">
-          <i class="bi bi-box-seam me-2"></i>Xem đơn hàng ngay
+          <i class="fas fa-box-open me-2"></i>Xem đơn hàng ngay
         </a>
       </div>
 
       <div *ngIf="!loading && !ok" class="scale-in">
         <div class="mb-4">
-          <div class="icon-circle bg-danger-subtle mx-auto">
-            <i class="bi bi-x-lg text-danger" style="font-size: 3rem;"></i>
+          <div class="icon-circle bg-danger-subtle mx-auto d-flex align-items-center justify-content-center">
+            <i class="fas fa-times text-danger" style="font-size: 3rem;"></i>
           </div>
         </div>
 
@@ -59,7 +59,7 @@
 
         <div class="d-grid gap-2">
           <a routerLink="/checkout" class="btn btn-primary shadow-sm">
-            <i class="bi bi-arrow-repeat me-2"></i>Thử thanh toán lại
+            <i class="fas fa-redo me-2"></i>Thử thanh toán lại
           </a>
           <a routerLink="/contact" class="btn btn-outline-secondary border-0">
             Cần hỗ trợ? Liên hệ ngay

@@ -34,7 +34,9 @@ export class LoginComponent {
 
   get f() { return this.form.controls; }
 
-  onSubmit() {
+  // login.component.ts
+
+onSubmit() {
     if (this.form.invalid) return;
     this.loading = true;
 
@@ -47,13 +49,14 @@ export class LoginComponent {
     const returnUrl = this.ar.snapshot.queryParamMap.get('returnUrl') || '/catalog';
 
     this.auth.login(req).subscribe({
-      next: (res) => {
-        this.authState.loginSuccess(res.accessToken, !!this.form.value.rememberMe);
+      next: () => {
+        this.authState.loginSuccess();
+
         this.toastr.success('Đăng nhập thành công');
         this.router.navigateByUrl(returnUrl);
       },
       error: () => this.loading = false,
       complete: () => this.loading = false
     });
-  }
+}
 }

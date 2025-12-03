@@ -65,8 +65,10 @@ public class AuthServiceImpl implements AuthService {
         RefreshToken rt = refreshService.issue(customerId, days, ip, ua);
         refreshCookie.write(httpResponse, rt.getToken(), maxAgeSec, httpRequest.getContextPath());
 
-        return new JwtResponse("Bearer ", accessToken,
-                jwtTokenService.getAccessTokenTtlSeconds(), user.getFullName());
+        int accessTtl = (int) jwtTokenService.getAccessTokenTtlSeconds();
+        writeAccessTokenCookie(httpResponse, accessToken, accessTtl);
+        return new JwtResponse("Bearer ", "",
+                accessTtl, user.getFullName());
     }
 
     @Override
@@ -91,9 +93,10 @@ public class AuthServiceImpl implements AuthService {
                 "subId", user.getCustomer().getId()
         );
         String accessToken = jwtTokenService.generateAccessToken(user, claims);
-
-        return new JwtResponse("Bearer ", accessToken,
-                jwtTokenService.getAccessTokenTtlSeconds(), user.getFullName());
+        int accessTtl = (int) jwtTokenService.getAccessTokenTtlSeconds();
+        writeAccessTokenCookie(httpResponse, accessToken, accessTtl);
+        return new JwtResponse("Bearer ", "",
+                accessTtl, user.getFullName());
     }
 
     @Override
@@ -103,6 +106,7 @@ public class AuthServiceImpl implements AuthService {
             refreshService.revoke(cookieVal);
         }
         refreshCookie.clear(httpResponse, httpRequest.getContextPath());
+        writeAccessTokenCookie(httpResponse, "", 0);
     }
 
     @Override
@@ -199,5 +203,21 @@ public class AuthServiceImpl implements AuthService {
             }
         }
         return null;
+    }
+
+    private void writeAccessTokenCookie(HttpServletResponse response, String token, int maxAge) {
+        Cookie cookie = new Cookie("eshop_access_token", token);
+        cookie.setHttpOnly(true); // QUAN TRỌNG: JS không đọc được
+        //cookie.setSecure(authProps.getCookie().isSecure()); // Chỉ HTTPS
+        cookie.setPath("/");
+        cookie.setMaxAge(maxAge);
+
+        // SameSite=Strict để chống CSRF tốt nhất
+        if (authProps.getCookie().isSecure()) {
+            cookie.setAttribute("SameSite", "Strict");
+        } else {
+            cookie.setAttribute("SameSite", "Lax");
+        }
+        response.addCookie(cookie);
     }
 }

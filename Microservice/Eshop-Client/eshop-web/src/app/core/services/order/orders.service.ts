@@ -14,9 +14,9 @@ export class OrdersService {
   private http = inject(HttpClient);
   private base = environment.baseGateway;
 
-  list(page = 1): Observable<PageResponse<OrderSummary>> {
+  list(page =1 ): Observable<PageResponse<OrderSummary>> {
     return this.http.get<PageResponse<OrderSummary>>(
-      this.base + API.ORDERS.MY_ORDERS
+      this.base + API.ORDERS.MY_ORDERS(page)
     );
   }
 

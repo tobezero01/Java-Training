@@ -72,8 +72,21 @@ export class CartComponent implements OnInit{
   }
 
   remove(it: CartLineView) {
-    this.cart.remove(it.productId).subscribe({ next: () => this.reload() });
+    // Gọi service, truyền productId của dòng giỏ
+    this.cart.remove(it.productId).subscribe({
+      // Nếu thành công: load lại giỏ để UI cập nhật
+      next: () => this.reload(),
+      // Nếu lỗi: có thể show modal/console log
+      error: (err) => {
+        console.error('Remove item error', err);
+        this.openWarn('Lỗi', 'Không thể xóa sản phẩm khỏi giỏ hàng.');
+      }
+    });
   }
+
+  // remove(it: CartLineView) {
+  //   this.cart.remove(it.productId).subscribe({ next: () => this.reload() });
+  // }
 
   clear() {
     this.cart.clear().subscribe({ next: () => this.reload() });

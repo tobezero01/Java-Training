@@ -20,10 +20,14 @@ export const API = {
   PRODUCTS: {
     BY_ID:     (id: number)        => `/api/products/${id}`,
     BY_ALIAS:  (alias: string)     => `/api/products/alias/${alias}`,
-    BY_CAT:    (catId: number, page=1, sort='name', dir: 'asc'|'desc' = 'asc') =>
-      `/api/products/by-category/${catId}?page=${page}&sort=${sort}&dir=${dir}`,
-    SEARCH:    (keyword: string, page=1) =>
-      `/api/products/search?keyword=${encodeURIComponent(keyword)}&page=${page}`,
+    BY_CAT: (catId: number, page=1, size=10, sort='name', dir='asc') =>
+      `/api/products/by-category/${catId}?page=${page}&size=${size}&sort=${sort}&dir=${dir}`,
+
+    SEARCH: (keyword: string, page=1, size=10) =>
+      `/api/products/search?keyword=${encodeURIComponent(keyword)}&page=${page}&size=${size}`,
+
+    FEATURED: (type: string, page=1, size=10) =>
+      `/api/products/featured?type=${type}&page=${page}&size=${size}`,
   },
       CART: {
     // GET & POST /api/cart/items
@@ -61,7 +65,7 @@ export const API = {
   },
   ORDERS: {
     // GET /api/orders/my?page=&size=
-    MY_ORDERS: '/api/orders',
+    MY_ORDERS: (page: number) => `/api/orders?page=${page}&size=10`,
     // GET /api/orders/{orderNumber}
     DETAIL: (orderNumber: string) => `/api/orders/${orderNumber}`
   }

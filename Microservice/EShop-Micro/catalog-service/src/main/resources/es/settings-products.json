@@ -1,23 +1,26 @@
 {
-  "analysis": {
-    "analyzer": {
-      "alias_ngram": {
-        "type": "custom",
-        "tokenizer": "edge_ngram_tokenizer",
-        "filter": [
-          "lowercase"
-        ]
-      }
-    },
-    "tokenizer": {
-      "edge_ngram_tokenizer": {
-        "type": "edge_ngram",
-        "min_gram": 1,
-        "max_gram": 20,
-        "token_chars": [
-          "letter",
-          "digit"
-        ]
+  "index": {
+    "max_ngram_diff": 20,
+    "analysis": {
+      "analyzer": {
+        "alias_ngram": {
+          "type": "custom",
+          "tokenizer": "my_ngram_tokenizer",
+          "filter": [
+            "lowercase"
+          ]
+        }
+      },
+      "tokenizer": {
+        "my_ngram_tokenizer": {
+          "type": "ngram",
+          "min_gram": 1,
+          "max_gram": 20,
+          "token_chars": [
+            "letter",
+            "digit"
+          ]
+        }
       }
     }
   }

@@ -23,7 +23,7 @@ public class ProductIndexRefreshJob {
     @Scheduled(cron = "${jobs.aliasIndex.cron}")
     @SchedulerLock(name = "productIndexRefreshJob", lockAtMostFor = "PT5M")
     public void refresh() {
-        Pageable pageable = PageRequest.of(0, 500, Sort.by("created_time").descending());
+        Pageable pageable = PageRequest.of(0, 150, Sort.by("updatedTime").descending());
         Page<Product> page = productRepository.findAll(pageable);
 
         for (Product product : page.getContent()) {

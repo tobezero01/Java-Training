@@ -12,4 +12,5 @@ export interface ProductDto {
   categoryId?: number;
   categoryName?: string;
   inStock?: boolean;
+  extraImagePaths: string[];
 }

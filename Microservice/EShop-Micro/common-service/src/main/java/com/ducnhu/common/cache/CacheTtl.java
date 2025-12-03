@@ -15,7 +15,7 @@ public final class CacheTtl {
     public static final Duration PAGE_INDEX = Duration.ofMinutes(10); // list ổn định (category)
     public static final Duration PAGE_INDEX_SEARCH = Duration.ofSeconds(2);
     public static final Duration ITEM_DETAIL = Duration.ofMinutes(10); // chi tiết item
-    public static final Duration ALIAS_TO_ID = Duration.ofDays(1);
+    public static final Duration ALIAS_TO_ID = Duration.ofMinutes(65);
 
     private CacheTtl() {}
 }

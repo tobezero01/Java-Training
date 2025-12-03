@@ -10,6 +10,7 @@ import { ProfileUpdateRequest } from '../../../features/auth/models/profile-upda
 import { ForgotPasswordRequest } from '../../../features/auth/models/forgot-password-request.model';
 import { ResetPasswordRequest } from '../../../features/auth/models/reset-password-request.model';
 import { SimpleMessage } from '../../../features/auth/models/simple-message.model';
+import { RegisterRequest } from '../../../features/auth/models/register-request.model';
 
 @Injectable({
   providedIn: 'root'
@@ -27,6 +28,10 @@ export class AuthService {
 
   refresh() {
     return this.http.post<JwtResponse>(`${this.base}${API.AUTH.REFRESH}`, {}, { withCredentials: true });
+  }
+
+  register(req: RegisterRequest) {
+    return this.http.post<SimpleMessage>(`${this.base}${API.AUTH.REGISTER}`, req);
   }
 
   logout() {

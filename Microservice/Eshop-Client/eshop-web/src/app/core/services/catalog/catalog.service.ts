@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../../environments/environment.development';
-import { firstValueFrom } from 'rxjs';
+import { firstValueFrom, zip } from 'rxjs';
 import { CategoryNodeDto } from '../../../features/catalog/models/category-node-dto.model';
 import { API } from '../../constants/api-endpoints';
 import { CategoryDto } from '../../../features/catalog/models/category-dto.model';
@@ -38,10 +38,13 @@ export class CatalogService {
   getProductByAlias(alias: string): Promise<ProductDto> {
     return firstValueFrom(this.http.get<ProductDto>(`${this.base}${API.PRODUCTS.BY_ALIAS(alias)}`));
   }
-  listProductsByCategory(catId: number, page = 1, sort = 'name', dir: 'asc'|'desc' = 'asc'): Promise<PageResponse<ProductDto>> {
-    return firstValueFrom(this.http.get<PageResponse<ProductDto>>(`${this.base}${API.PRODUCTS.BY_CAT(catId, page, sort, dir)}`));
+  listProductsByCategory(catId: number, page = 1,size = 10, sort = 'name', dir: 'asc'|'desc' = 'asc'): Promise<PageResponse<ProductDto>> {
+    return firstValueFrom(this.http.get<PageResponse<ProductDto>>(`${this.base}${API.PRODUCTS.BY_CAT(catId, page, size, sort, dir)}`));
   }
-  searchProducts(keyword: string, page = 1): Promise<PageResponse<ProductDto>> {
-    return firstValueFrom(this.http.get<PageResponse<ProductDto>>(`${this.base}${API.PRODUCTS.SEARCH(keyword, page)}`));
+  searchProducts(keyword: string, page = 1,size = 10): Promise<PageResponse<ProductDto>> {
+    return firstValueFrom(this.http.get<PageResponse<ProductDto>>(`${this.base}${API.PRODUCTS.SEARCH(keyword, page, size)}`));
   }
+  getFeaturedProducts(type: 'top-rated' | 'most-reviewed', page = 1, size = 10): Promise<PageResponse<ProductDto>> {
+  return firstValueFrom(this.http.get<PageResponse<ProductDto>>(`${this.base}${API.PRODUCTS.FEATURED(type, page, size)}`));
+}
 }

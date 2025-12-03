@@ -1,5 +1,7 @@
 package com.ducnhu.catalog.dto;
 
+import java.util.List;
+
 public record ProductDTO(
         Integer id,
         String name,
@@ -13,5 +15,6 @@ public record ProductDTO(
         Integer reviewCount,
         Integer categoryId,
         String categoryName,
-        Boolean inStock
+        Boolean inStock,
+        List<String> extraImagePaths
 ) {}

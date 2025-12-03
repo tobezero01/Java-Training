@@ -28,7 +28,7 @@ export class SearchComponent implements OnInit{
       const q = qp.get('q') || '';
       const page = Number(qp.get('page') || 1);
       this.keyword.set(q);
-      const res = await this.srv.searchProducts(q, page);
+      const res = await this.srv.searchProducts(q, page, 10);
       this.items.set(res.content);
       this.totalPages.set(res.totalPages);
       this.page.set(clampPage(res.page, res.totalPages));

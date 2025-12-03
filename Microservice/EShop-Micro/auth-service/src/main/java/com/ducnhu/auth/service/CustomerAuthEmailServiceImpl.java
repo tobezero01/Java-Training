@@ -20,6 +20,7 @@ public class CustomerAuthEmailServiceImpl implements CustomerAuthEmailService {
 
     private final SettingService settingService;
     private final JavaMailSender mailSender; // TIÊM BEAN
+    private final String frontendBaseUrl = "http://localhost:4200";
 
     @Override
     public void sendRegistrationVerification(HttpServletRequest req, Customer customer)
@@ -68,7 +69,7 @@ public class CustomerAuthEmailServiceImpl implements CustomerAuthEmailService {
         );
 
         // FE page: người dùng mở link này, nhập mật khẩu mới, FE gọi POST /api/auth/reset-password
-        String link = Utility.getSiteURL(req) + "/reset-password?token=" + token;
+        String link = frontendBaseUrl  + "/reset-password?token=" + token;
 
         MimeMessage msg = mailer.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(msg, "UTF-8");

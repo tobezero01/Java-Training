@@ -30,6 +30,7 @@ import { PaypalSuccessComponent } from './features/checkout/pages/paypal-success
 import { ContactComponent } from './features/static/pages/contact/contact.component';
 import { PolicyComponent } from './features/static/pages/policy/policy.component';
 import { OrderDetailComponent } from './features/orders/pages/order-detail/order-detail.component';
+import { RegisterComponent } from './features/auth/pages/register/register.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'catalog', pathMatch: 'full' },
@@ -44,6 +45,7 @@ export const routes: Routes = [
       { path: 'reset-password', component: ResetPasswordComponent },
       { path: 'contact', component: ContactComponent },
       { path: 'policy', component: PolicyComponent },
+      { path: 'register', component: RegisterComponent},
 
       // FEATURES (không lazy; trực tiếp path + component)
       { path: 'catalog', component: ProductListComponent },

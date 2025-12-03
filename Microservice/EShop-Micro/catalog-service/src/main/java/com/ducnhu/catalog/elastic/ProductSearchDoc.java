@@ -19,7 +19,7 @@ public class ProductSearchDoc {
     private Integer id;
 
     @Field(type = FieldType.Keyword)
-    private String alias;       // tra cứu chính xác (term)
+    private String alias;
 
     @Field(type = FieldType.Text, analyzer = "alias_ngram", searchAnalyzer = "standard")
     private String aliasNgram;  // phục vụ prefix/contains nếu muốn mở rộng
@@ -27,6 +27,6 @@ public class ProductSearchDoc {
     @Field(type = FieldType.Text, analyzer = "standard")
     private String name;
 
-    @Field(type = FieldType.Keyword)
+    @Field(type = FieldType.Text, analyzer = "standard")
     private String categoryName;
 }

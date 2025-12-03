@@ -1,3 +1,42 @@
 .card :hover {
   color: rgb(230, 121, 57);
 }
+
+.nav-link {
+  color: #6c757d;
+  /* Màu chữ xám */
+  background-color: #f8f9fa;
+  /* Màu nền xám nhạt */
+  border: 1px solid #dee2e6;
+  /* Viền nhẹ (nếu muốn) */
+  transition: all 0.3s ease;
+  /* Hiệu ứng chuyển màu mượt */
+}
+
+
+.btn-rated.active {
+  background-color: rgb(230, 121, 57) !important;
+  /* Màu Cam/Vàng tùy ý bạn chọn */
+  color: #ffffff !important;
+  /* Màu chữ trắng */
+  border-color: rgb(230, 121, 57) !important;
+  box-shadow: 0 4px 6px rgba(255, 152, 0, 0.3);
+  /* Đổ bóng nhẹ cho đẹp */
+}
+
+/* --- CUSTOM CHO NÚT QUAN TÂM NHIỀU --- */
+/* Khi nút có class .btn-reviewed ĐANG active */
+.btn-reviewed.active {
+  background-color: #d68a72 !important;
+  /* Màu Xanh đen đậm (Midnight Blue) */
+  color: #ffffff !important;
+  border-color: #d68a72 !important;
+  box-shadow: 0 4px 6px rgba(44, 62, 80, 0.3);
+}
+
+/* (Tùy chọn) Hiệu ứng khi di chuột vào */
+.nav-link:hover:not(.active) {
+  background-color: #e9ecef;
+  transform: translateY(-1px);
+  /* Nổi lên nhẹ */
+}

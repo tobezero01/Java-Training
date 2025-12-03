@@ -29,14 +29,22 @@ export class ProductListComponent implements OnInit {
   selectedCat = signal<CategoryDto | null>(null);
   childCats = signal<CategoryDto[]>([]);
 
+
   items = signal<any[]>([]);
   page = signal(1);
   totalPages = signal(1);
   sort = signal('name|asc');
   keyword = signal('');
+  size = signal(10);
 
   loadingTree = signal(false);
   loadingProducts = signal(false);
+
+  featuredItems = signal<any[]>([]);
+  featuredType = signal<'top-rated' | 'most-reviewed'>('top-rated'); // Tab đang chọn
+  loadingFeatured = signal(false);
+  featuredPage = signal(1);
+  featuredTotalPages = signal(1);
 
   async ngOnInit(): Promise<void> {
     // load tree + topCats 1 lần, có catch lỗi rõ ràng
@@ -62,18 +70,24 @@ export class ProductListComponent implements OnInit {
       const s = query.get('sort') || 'name';
       const d = (query.get('dir') as any) || 'asc';
       const kw = query.get('q') || '';
+      const sz = Number(query.get('size') || 10);
 
       this.sort.set(`${s}|${d}`);
       this.keyword.set(kw);
       this.page.set(Math.max(page, 1));
+      this.size.set(sz);
 
-      this.loadingProducts.set(true);
+      if (kw || catId) {
+          this.featuredItems.set([]);
+       }
+
+       this.loadingProducts.set(true);
 
       try {
         if (kw) {
           this.selectedCat.set(null);
           this.childCats.set([]);
-          const res = await this.catalogService.searchProducts(kw, page);
+          const res = await this.catalogService.searchProducts(kw, page, sz);
           this.items.set(res.content);
           this.totalPages.set(res.totalPages);
           this.page.set(clampPage(res.page, res.totalPages));
@@ -82,7 +96,7 @@ export class ProductListComponent implements OnInit {
 
         if (catId) {
           this.setSelectedAndChildren(catId);
-          const res = await this.catalogService.listProductsByCategory(catId, page, s, d);
+          const res = await this.catalogService.listProductsByCategory(catId, page, sz, s, d);
           this.items.set(res.content);
           this.totalPages.set(res.totalPages);
           this.page.set(clampPage(res.page, res.totalPages));
@@ -95,6 +109,7 @@ export class ProductListComponent implements OnInit {
         this.items.set([]);
         this.totalPages.set(1);
         this.page.set(1);
+        this.loadFeaturedData();
       } catch (err) {
         console.error('Lỗi tải sản phẩm:', err);
         this.toastr.error('Không tải được sản phẩm. Vui lòng thử lại sau.');
@@ -102,6 +117,39 @@ export class ProductListComponent implements OnInit {
         this.loadingProducts.set(false);
       }
     });
+  }
+  async loadFeaturedData(page: number = 1) {
+    this.loadingFeatured.set(true);
+    try {
+      // Gọi API với page truyền vào
+      const res = await this.catalogService.getFeaturedProducts(this.featuredType(), page, 10);
+
+      this.featuredItems.set(res.content);
+
+      // Cập nhật state phân trang
+      this.featuredPage.set(res.page); // Hoặc dùng biến page
+      this.featuredTotalPages.set(res.totalPages);
+
+    } catch (e) {
+      console.error('Lỗi load featured', e);
+      this.toastr.error('Lỗi tải dữ liệu nổi bật');
+    } finally {
+      this.loadingFeatured.set(false);
+    }
+  }
+
+  changeFeaturedTab(type: 'top-rated' | 'most-reviewed') {
+    if (this.featuredType() === type) return;
+    this.featuredType.set(type);
+
+    // Khi đổi tab, reset về trang 1
+    this.loadFeaturedData(1);
+  }
+  goFeaturedPage(p: number) {
+    // Gọi hàm load lại dữ liệu ở trang mới
+    this.loadFeaturedData(p);
+
+    document.getElementById('featured-section')?.scrollIntoView({ behavior: 'smooth' });
   }
 
   goSearch(q: string) {

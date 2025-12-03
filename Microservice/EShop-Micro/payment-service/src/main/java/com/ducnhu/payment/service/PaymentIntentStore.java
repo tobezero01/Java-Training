@@ -25,11 +25,10 @@ public class PaymentIntentStore {
     }
 
     public void put(Intent i) {
-        redis.opsForValue().set(key(i.getOrderNumber()), i, Duration.ofMinutes(15));
+        redis.opsForValue().set(key(i.getOrderNumber()), i, Duration.ofMinutes(10));
     }
 
     public Intent get(String orderNumber) throws JsonProcessingException {
-        // Dù template typed, nếu lỡ còn dữ liệu cũ trong Redis, vẫn có thể trả Map.
         Object raw = redis.opsForValue().get(key(orderNumber));
         if (raw == null) return null;
         if (raw instanceof Intent i) return i;

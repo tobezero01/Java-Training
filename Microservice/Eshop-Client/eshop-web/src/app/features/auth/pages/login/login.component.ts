@@ -3,7 +3,7 @@ import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../../core/services/auth/auth.service';
 import { TokenStorageService } from '../../../../core/services/token-storage/token-storage.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { LoginRequest } from '../../models/login-request.model';
 import { AuthStateService } from '../../../../core/services/auth/auth-state.service';
@@ -11,7 +11,7 @@ import { AuthStateService } from '../../../../core/services/auth/auth-state.serv
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css'
 })

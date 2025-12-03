@@ -54,6 +54,16 @@ public class ProductImage {
         this.product = product;
     }
 
+//    @Transient
+//    public String getImagePath() {
+//        // fallback nếu thiếu dữ liệu
+//        if (product == null || product.getId() == null || name == null || name.isBlank()) {
+//            return "/images/image-thumbnail.png";
+//        }
+//        // ví dụ: /product-images/1/extras/EOS M50 flash opened.png
+//        return "/product-images/" + product.getId() + "/extras/" + name;
+//    }
+
     @Transient
     public String getImagePath() {
         return "/product-images/" + product.getId() + "/extras/" + this.name;

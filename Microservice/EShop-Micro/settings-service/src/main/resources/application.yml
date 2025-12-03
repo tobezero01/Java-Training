@@ -12,7 +12,7 @@ spring:
     jwt:
       issuer: eshop-auth
       secret: ${JWT_SECRET:a2VlcC10aGlzLWtleS1wcml2YXRlLWFuZC1hbmQtb25seS1kZXZlbG9wZXItaGF2ZS1wZXJtaXNzaW9uLXRvLWNoYW5nZS1pdC1ub3RpZnktYnktRHVjbmh1YWQ}
-      access-ttl-seconds: 36000
+      access-ttl-seconds: 1800
   datasource:
     url: ${DB_URL:jdbc:mysql://host.docker.internal:3306/eshopdb?useUnicode=true&characterEncoding=utf8&serverTimezone=UTC}
     username: ${DB_USERNAME:root}

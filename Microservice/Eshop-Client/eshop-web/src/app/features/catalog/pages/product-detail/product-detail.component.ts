@@ -30,6 +30,8 @@ export class ProductDetailComponent implements OnInit {
   currentImage = signal<string>('assets/image.png');
   extraImages = signal<string[]>([]);
 
+  quantity = signal<number>(1);
+
   async ngOnInit() {
     const alias = this.ar.snapshot.paramMap.get('alias')!;
     const prod = await this.srv.getProductByAlias(alias);
@@ -63,9 +65,13 @@ export class ProductDetailComponent implements OnInit {
       return;
     }
 
+    let q = this.quantity();
+    if (q < 1) q = 1;
+    if (q > 10) q = 10;
+
     const req: AddItemRequest = {
     productId: prod.id,
-    quantity: 1
+    quantity: q
   };
 
     this.cartService.addItem(req).subscribe({
@@ -104,11 +110,64 @@ export class ProductDetailComponent implements OnInit {
   }
 
   private buildExtraImages(prod: ProductDto) {
-    const baseDir = `assets/product-images/${prod.id}/extras`;
-    const urls: string[] = [];
-    for (let i = 1; i <= 4; i++) {
-      urls.push(`${baseDir}/${i}.jpg`);
+    // 1) Lấy URL ảnh chính hiện tại (đã set ở ngOnInit)
+    const mainUrl = this.currentImage();       // vd: "assets/product-images/73/main.png"
+
+    // 2) Khởi tạo mảng thumbnail
+    const thumbs: string[] = [];
+
+    // 3) Cho ảnh chính vào thumbnail đầu tiên
+    //    (nếu không muốn hiển thị placeholder thì bỏ điều kiện `mainUrl !== 'assets/image.png'`)
+    if (mainUrl && mainUrl !== 'assets/image.png') {
+      thumbs.push(mainUrl);
     }
-    this.extraImages.set(urls);
+
+    // 4) Nếu backend trả danh sách ảnh phụ thì map sang URL thực tế
+    if (prod.extraImagePaths && prod.extraImagePaths.length > 0) {
+      const extraUrls = prod.extraImagePaths
+        .map(p => {
+          // Backend thường trả "/product-images/73/extras/xxx.png"
+          if (p.startsWith('assets/')) {
+            return p;                           // đã đầy đủ
+          }
+          return 'assets' + (p.startsWith('/')  // thêm prefix "assets"
+            ? p
+            : '/' + p);
+        })
+        .filter(u => u !== mainUrl);            // 5) tránh trùng với ảnh chính
+
+      thumbs.push(...extraUrls);
+    }
+
+    this.extraImages.set(thumbs);
   }
+
+  decQuantity() {
+    const cur = this.quantity();
+    if (cur > 1) {
+      this.quantity.set(cur - 1);
+    }
+  }
+
+  incQty() {
+    // tăng 1 nhưng không vượt quá 10
+    const cur = this.quantity();
+    if (cur >= 10) {
+      this.toastr.warning('Mỗi sản phẩm mua tối đa 10.');
+      return;
+    }
+    this.quantity.set(cur + 1);
+  }
+
+  onManualQtyChange(val: string) {
+    // parse từ input, clamp 1..10
+    let n = Number(val || '1');
+    if (Number.isNaN(n) || n < 1) n = 1;
+    if (n > 10) {
+      this.toastr.warning('Mỗi sản phẩm mua tối đa 10.');
+      n = 10;
+    }
+    this.quantity.set(n);
+  }
+
 }

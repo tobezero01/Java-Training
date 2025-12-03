@@ -13,9 +13,8 @@ public interface ProductService {
     ProductDTO getProduct(String alias) throws ProductNotFoundException;
     ProductDTO getProduct(Integer id)    throws ProductNotFoundException;
 
-    PageResponse<ProductDTO> search(String keyWord, int pageNum);
-    PageResponse<ProductDTO> listByCategoryPaged(Integer categoryId, int page, String sort, String dir);
-
+    PageResponse<ProductDTO> search(String keyWord, int pageNum, int size);    PageResponse<ProductDTO> listByCategoryPaged(Integer categoryId, int page, int size, String sort, String dir);
+    PageResponse<ProductDTO> listFeaturedProducts(String type, int page, int size);
     // Purchased products: cũng trả DTO để đồng nhất
     //PageResponse<ProductDTO> getPurchasedProducts(Integer customerId, int page, String sort, String dir);
 }

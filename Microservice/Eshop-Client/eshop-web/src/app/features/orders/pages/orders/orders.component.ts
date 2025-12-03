@@ -30,8 +30,8 @@ export class OrdersComponent implements OnInit {
     this.svc.list(p).subscribe({
       next: res => {
         this.items = res.content || [];
-        this.page = res.page || 1;
-        this.totalPages = res.totalPages || 1;
+        this.page = res.page ;
+        this.totalPages = res.totalPages ;
       },
       error: () => {
         this.loading = false;

@@ -22,6 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+
 import java.util.List;
 
 @Service
@@ -41,20 +42,21 @@ public class ProductServiceImpl implements ProductService {
      */
     @Override
     public PageResponse<ProductDTO> listByCategory(Integer categoryId, int page, String sort, String dir) {
-        String catVer = (categoryId != null) ?  redisTemplate.opsForValue().get(CacheKey.catVer(categoryId)) : null;
+        String catVer = (categoryId != null) ? redisTemplate.opsForValue().get(CacheKey.catVer(categoryId)) : null;
 
         String key = CacheKey.ns(
                 "prod:byCat:v2",
                 "cat", String.valueOf(categoryId),
-                "p",   String.valueOf(page),
-                "s",   (sort == null ? "" : sort),
-                "d",   (dir  == null ? "" : dir),
+                "p", String.valueOf(page),
+                "s", (sort == null ? "" : sort),
+                "d", (dir == null ? "" : dir),
                 "ver", (catVer == null ? "" : catVer)
         );
 
         return redisCacheService.getOrLoad(
                 key,
-                new TypeReference<PageResponse<ProductDTO>>() {},
+                new TypeReference<PageResponse<ProductDTO>>() {
+                },
                 CacheTtl.PRODUCT,
                 () -> {
                     Sort srt = Sort.unsorted();
@@ -81,9 +83,35 @@ public class ProductServiceImpl implements ProductService {
                 }
         );
     }
+
     @Override
-    public PageResponse<ProductDTO> listByCategoryPaged(Integer categoryId, int page, String sort, String dir) {
-        ProductFilter filter = new ProductFilter(categoryId, null, sort, dir);
+    public PageResponse<ProductDTO> listByCategoryPaged(Integer categoryId, int page, int size, String sort, String dir) {
+        ProductFilter filter = new ProductFilter(categoryId, null, sort, dir, size, null);
+        return productThinPagingService.list(filter, page);
+    }
+
+    @Override
+    public PageResponse<ProductDTO> listFeaturedProducts(String type, int page, int size) {
+        String sortField;
+        String dir = "desc";
+        Integer minReview = null;
+
+        switch (type) {
+            case "top-rated":
+                sortField = "averageRating";
+                minReview = 1;
+                break;
+            case "most-reviewed":
+                sortField = "reviewCount";
+                minReview = 1;
+                break;
+            case "new-arrival":
+            default:
+                sortField = "createdTime";
+                break;
+        }
+
+        ProductFilter filter = new ProductFilter(null, null, sortField, "desc", size, minReview);
         return productThinPagingService.list(filter, page);
     }
 
@@ -95,23 +123,7 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDTO getProduct(String alias) throws ProductNotFoundException {
-//        ProductDTO dto = redisCacheService.getOrLoad(
-//                CacheKey.productByAlias(alias),
-//                ProductDTO.class,
-//                CacheTtl.PRODUCT,
-//                () -> {
-//                    Product product = productRepository.findByAlias(alias);
-//                    return (product==null? null : ProductMapper.toDto(product));
-//                }
-//        );
-//        if (dto == null) throw new ProductNotFoundException("Product not found with alias " + alias);
-//        // LƯU Ý: CacheKey.productByAlias(alias) đang lưu DTO, KHÔNG lưu entity
-//        return dto;
-        // 1) Tra alias->id (nếu __NULL__ -> 404 nhanh)
-//        Integer id = productIndexService.resolveAlias(alias);
-//        if (id != null) {
-//            return getProduct(id); // tái sử dụng get-by-id (đã tối ưu bitmap + cache item)
-//        }
+
         Integer id = aliasResolver.resolveId(alias);  // <-- ProductAliasResolver
         if (id != null) return getProduct(id);
 
@@ -166,15 +178,14 @@ public class ProductServiceImpl implements ProductService {
             throw new ProductNotFoundException("Product not found with ID " + id);
         }
 
-        // Đảm bảo bitmap được mark khi vừa load thành công từ DB
         productIndexService.markIdExists(id);
         return dto;
     }
 
     @Override
-    public PageResponse<ProductDTO> search(String keyWord, int pageNum) {
-        ProductFilter filter = new ProductFilter(null, keyWord, null, null);
-        return productThinPagingService.list(filter, pageNum); // trả thẳng DTO
+    public PageResponse<ProductDTO> search(String keyWord, int pageNum, int size) {
+        ProductFilter filter = new ProductFilter(null, keyWord, null, null, size, null);
+        return productThinPagingService.list(filter, pageNum);
     }
 
 //    @Override

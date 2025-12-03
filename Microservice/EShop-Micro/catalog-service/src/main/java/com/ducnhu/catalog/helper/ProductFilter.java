@@ -1,6 +1,7 @@
 package com.ducnhu.catalog.helper;
 
-public record ProductFilter(Integer categoryId, String keyword, String sort, String dir) {
+public record ProductFilter(Integer categoryId, String keyword, String sort, String dir, Integer size,
+                            Integer minReviewCount) {
 }
 
 

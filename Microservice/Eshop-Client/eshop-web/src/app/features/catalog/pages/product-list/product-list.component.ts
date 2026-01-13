@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ProductCardComponent } from '../../components/product-card/product-card.component';
@@ -13,6 +13,7 @@ import { ToastrService } from 'ngx-toastr';
   selector: 'app-product-list',
   standalone: true,
   imports: [ProductCardComponent, CategoryTreeComponent, CommonModule],
+  changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './product-list.component.html',
   styleUrl: './product-list.component.css'
 })

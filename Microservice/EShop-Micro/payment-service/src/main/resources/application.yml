@@ -45,3 +45,8 @@ app:
 logging:
   level:
     org.springframework.security: DEBUG
+jobs:
+  paymentIntentTimeout:
+    minutes: 10              # khớp TTL intentRedisTemplate
+    check-interval-ms: 60000 # job chạy mỗi 60s
+    batch-size: 100          # mỗi lần xử lý tối đa 100 payment

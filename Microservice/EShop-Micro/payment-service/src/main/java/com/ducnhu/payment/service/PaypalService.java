@@ -61,7 +61,6 @@ public class PaypalService {
         }
     }
 
-
     public PaypalCreateResult createOrder(String referenceId, Float amount, String currency,
                                           String returnUrl, String cancelUrl) {
         PaypalSettingsResponse cfg = settings();

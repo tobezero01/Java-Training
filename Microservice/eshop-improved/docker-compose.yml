@@ -1,0 +1,650 @@
+version: '3.9'
+
+# =============================================================================
+# EShop Microservices - Production-ready Docker Compose
+# =============================================================================
+# Features:
+# - Health checks for all services
+# - Resource limits
+# - Named volumes for persistence
+# - Proper networking
+# - Environment-based configuration
+# =============================================================================
+
+networks:
+  eshop-network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.0.0/16
+
+volumes:
+  mysql-data:
+  redis-data:
+  kafka-data:
+  zookeeper-data:
+  elasticsearch-data:
+
+x-common-variables: &common-variables
+  SPRING_PROFILES_ACTIVE: docker
+  EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka
+  SPRING_CONFIG_IMPORT: optional:configserver:http://config-server:8888
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  SPRING_REDIS_HOST: redis
+  SPRING_REDIS_PORT: 6379
+
+x-java-opts: &java-opts
+  JAVA_OPTS: >-
+    -XX:+UseG1GC
+    -XX:MaxRAMPercentage=75.0
+    -XX:InitialRAMPercentage=50.0
+    -XX:+UseContainerSupport
+    -Djava.security.egd=file:/dev/./urandom
+    -Dspring.backgroundpreinitializer.ignore=true
+
+x-healthcheck-defaults: &healthcheck-defaults
+  interval: 30s
+  timeout: 10s
+  retries: 3
+  start_period: 60s
+
+services:
+  # ===========================================================================
+  # Infrastructure Services
+  # ===========================================================================
+  
+  mysql:
+    image: mysql:8.0
+    container_name: eshop-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-root123}
+      MYSQL_DATABASE: eshop
+      MYSQL_USER: eshop
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-eshop123}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./init-scripts/mysql:/docker-entrypoint-initdb.d:ro
+    networks:
+      - eshop-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD:-root123}"]
+      <<: *healthcheck-defaults
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+
+  redis:
+    image: redis:7-alpine
+    container_name: eshop-redis
+    restart: unless-stopped
+    command: >
+      redis-server 
+      --appendonly yes
+      --maxmemory 256mb
+      --maxmemory-policy allkeys-lru
+      --tcp-keepalive 60
+      --timeout 0
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - eshop-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      <<: *healthcheck-defaults
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+        reservations:
+          memory: 128M
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: eshop-zookeeper
+    restart: unless-stopped
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_INIT_LIMIT: 5
+      ZOOKEEPER_SYNC_LIMIT: 2
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+    networks:
+      - eshop-network
+    healthcheck:
+      test: echo ruok | nc localhost 2181 | grep imok
+      <<: *healthcheck-defaults
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: eshop-kafka
+    restart: unless-stopped
+    depends_on:
+      zookeeper:
+        condition: service_healthy
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9092,EXTERNAL://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9092,EXTERNAL://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_RETENTION_BYTES: 1073741824
+      KAFKA_MESSAGE_MAX_BYTES: 1048576
+      # Performance tuning
+      KAFKA_NUM_IO_THREADS: 8
+      KAFKA_NUM_NETWORK_THREADS: 3
+      KAFKA_SOCKET_SEND_BUFFER_BYTES: 102400
+      KAFKA_SOCKET_RECEIVE_BUFFER_BYTES: 102400
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    networks:
+      - eshop-network
+    healthcheck:
+      test: kafka-topics --bootstrap-server localhost:9092 --list
+      <<: *healthcheck-defaults
+      start_period: 90s
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+          cpus: '1.0'
+        reservations:
+          memory: 512M
+
+  # Kafka UI for monitoring
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: eshop-kafka-ui
+    restart: unless-stopped
+    depends_on:
+      kafka:
+        condition: service_healthy
+    environment:
+      KAFKA_CLUSTERS_0_NAME: eshop-kafka
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    ports:
+      - "8090:8080"
+    networks:
+      - eshop-network
+    profiles:
+      - monitoring
+
+  # ===========================================================================
+  # Spring Cloud Infrastructure
+  # ===========================================================================
+
+  config-server:
+    build:
+      context: ./config-server
+      dockerfile: Dockerfile
+    image: eshop/config-server:latest
+    container_name: eshop-config-server
+    restart: unless-stopped
+    environment:
+      <<: [*common-variables, *java-opts]
+      SPRING_PROFILES_ACTIVE: native,docker
+    ports:
+      - "8888:8888"
+    networks:
+      - eshop-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      <<: *healthcheck-defaults
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+
+  eureka-server:
+    build:
+      context: ./eureka-server
+      dockerfile: Dockerfile
+    image: eshop/eureka-server:latest
+    container_name: eshop-eureka-server
+    restart: unless-stopped
+    depends_on:
+      config-server:
+        condition: service_healthy
+    environment:
+      <<: [*common-variables, *java-opts]
+    ports:
+      - "8761:8761"
+    networks:
+      - eshop-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      <<: *healthcheck-defaults
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+
+  gateway:
+    build:
+      context: ./gateway
+      dockerfile: Dockerfile
+    image: eshop/gateway:latest
+    container_name: eshop-gateway
+    restart: unless-stopped
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      <<: [*common-variables, *java-opts]
+    ports:
+      - "8080:8080"
+    networks:
+      - eshop-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      <<: *healthcheck-defaults
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+
+  # ===========================================================================
+  # Business Microservices
+  # ===========================================================================
+
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    image: eshop/auth-service:latest
+    container_name: eshop-auth-service
+    restart: unless-stopped
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      <<: [*common-variables, *java-opts]
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/eshop_auth?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: eshop
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-eshop123}
+      JWT_SECRET: ${JWT_SECRET:-your-super-secret-jwt-key-that-should-be-very-long-and-secure}
+    ports:
+      - "9001:9001"
+    networks:
+      - eshop-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9001/actuator/health"]
+      <<: *healthcheck-defaults
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+
+  catalog-service:
+    build:
+      context: ./catalog-service
+      dockerfile: Dockerfile
+    image: eshop/catalog-service:latest
+    container_name: eshop-catalog-service
+    restart: unless-stopped
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      <<: [*common-variables, *java-opts]
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/eshop_catalog?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: eshop
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-eshop123}
+    ports:
+      - "9002:9002"
+    networks:
+      - eshop-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9002/actuator/health"]
+      <<: *healthcheck-defaults
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+          cpus: '1.0'
+
+  cart-service:
+    build:
+      context: ./cart-service
+      dockerfile: Dockerfile
+    image: eshop/cart-service:latest
+    container_name: eshop-cart-service
+    restart: unless-stopped
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      <<: [*common-variables, *java-opts]
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/eshop_cart?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: eshop
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-eshop123}
+    ports:
+      - "9003:9003"
+    networks:
+      - eshop-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9003/actuator/health"]
+      <<: *healthcheck-defaults
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+
+  customer-service:
+    build:
+      context: ./customer-service
+      dockerfile: Dockerfile
+    image: eshop/customer-service:latest
+    container_name: eshop-customer-service
+    restart: unless-stopped
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      <<: [*common-variables, *java-opts]
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/eshop_customer?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: eshop
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-eshop123}
+    ports:
+      - "9004:9004"
+    networks:
+      - eshop-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9004/actuator/health"]
+      <<: *healthcheck-defaults
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+
+  order-service:
+    build:
+      context: ./order-service
+      dockerfile: Dockerfile
+    image: eshop/order-service:latest
+    container_name: eshop-order-service
+    restart: unless-stopped
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      <<: [*common-variables, *java-opts]
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/eshop_order?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: eshop
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-eshop123}
+    ports:
+      - "9007:9007"
+    networks:
+      - eshop-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9007/actuator/health"]
+      <<: *healthcheck-defaults
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+          cpus: '1.0'
+
+  checkout-service:
+    build:
+      context: ./checkout-service
+      dockerfile: Dockerfile
+    image: eshop/checkout-service:latest
+    container_name: eshop-checkout-service
+    restart: unless-stopped
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      <<: [*common-variables, *java-opts]
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/eshop_checkout?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: eshop
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-eshop123}
+    ports:
+      - "9010:9010"
+    networks:
+      - eshop-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9010/actuator/health"]
+      <<: *healthcheck-defaults
+    deploy:
+      resources:
+        limits:
+          memory: 768M
+          cpus: '1.0'
+
+  payment-service:
+    build:
+      context: ./payment-service
+      dockerfile: Dockerfile
+    image: eshop/payment-service:latest
+    container_name: eshop-payment-service
+    restart: unless-stopped
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      <<: [*common-variables, *java-opts]
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/eshop_payment?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: eshop
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-eshop123}
+      PAYPAL_CLIENT_ID: ${PAYPAL_CLIENT_ID:-}
+      PAYPAL_CLIENT_SECRET: ${PAYPAL_CLIENT_SECRET:-}
+    ports:
+      - "9011:9011"
+    networks:
+      - eshop-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9011/actuator/health"]
+      <<: *healthcheck-defaults
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+
+  shipping-service:
+    build:
+      context: ./shipping-service
+      dockerfile: Dockerfile
+    image: eshop/shipping-service:latest
+    container_name: eshop-shipping-service
+    restart: unless-stopped
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      <<: [*common-variables, *java-opts]
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/eshop_shipping?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: eshop
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-eshop123}
+    ports:
+      - "9006:9006"
+    networks:
+      - eshop-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9006/actuator/health"]
+      <<: *healthcheck-defaults
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+
+  settings-service:
+    build:
+      context: ./settings-service
+      dockerfile: Dockerfile
+    image: eshop/settings-service:latest
+    container_name: eshop-settings-service
+    restart: unless-stopped
+    depends_on:
+      eureka-server:
+        condition: service_healthy
+      mysql:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    environment:
+      <<: [*common-variables, *java-opts]
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/eshop_settings?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: eshop
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD:-eshop123}
+    ports:
+      - "9005:9005"
+    networks:
+      - eshop-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9005/actuator/health"]
+      <<: *healthcheck-defaults
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+
+  # ===========================================================================
+  # Observability Stack (optional, enable with --profile monitoring)
+  # ===========================================================================
+
+  prometheus:
+    image: prom/prometheus:v2.47.0
+    container_name: eshop-prometheus
+    restart: unless-stopped
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    ports:
+      - "9090:9090"
+    networks:
+      - eshop-network
+    profiles:
+      - monitoring
+
+  grafana:
+    image: grafana/grafana:10.1.0
+    container_name: eshop-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_USERS_ALLOW_SIGN_UP: false
+    volumes:
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    ports:
+      - "3000:3000"
+    networks:
+      - eshop-network
+    profiles:
+      - monitoring
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.14.0
+    container_name: eshop-elasticsearch
+    restart: unless-stopped
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - eshop-network
+    profiles:
+      - monitoring
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.14.0
+    container_name: eshop-kibana
+    restart: unless-stopped
+    depends_on:
+      - elasticsearch
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    ports:
+      - "5601:5601"
+    networks:
+      - eshop-network
+    profiles:
+      - monitoring

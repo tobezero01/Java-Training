@@ -25,6 +25,8 @@ import com.ducnhu.payment.service.PaypalService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -84,6 +86,15 @@ public class PaypalController {
         PaypalCreateResult r = paypalService.createOrderForServer(
                 orderNumber, sum.paymentTotal(), currency, returnUrl, cancelUrl);
 
+        // 2b) lưu Payment ở trạng thái INTENT_CREATED
+        paymentApp.createPendingPayment(
+                orderNumber,
+                me.id(),
+                customerEmail,
+                sum.paymentTotal(),
+                currency,
+                r.orderId()
+        );
         // 3) Lưu PaymentIntent (Redis) – THÊM snapshot giỏ hàng
         intentStore.put(new Intent(
                 orderNumber,
@@ -110,9 +121,8 @@ public class PaypalController {
     }
 
     @PostMapping("/capture")
-    public Map<String, Object> capture(@RequestParam("paypalOrderId") String paypalOrderId,
-                                       @RequestParam(name = "orderNumber") String orderNumber) throws Exception {
-
+    public ResponseEntity<Map<String, Object>> capture(@RequestParam("paypalOrderId") String paypalOrderId,
+                                                      @RequestParam(name = "orderNumber") String orderNumber) throws Exception {
         // 1) PaymentIntent
         Intent intent = intentStore.get(orderNumber);
         if (intent == null) {
@@ -122,7 +132,13 @@ public class PaypalController {
                     intent.paypalOrderId, paypalOrderId);
         }
         if (intent == null || !paypalOrderId.equals(intent.paypalOrderId)) {
-            throw new IllegalStateException("PaymentIntent not found or mismatched paypalOrderId");
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of(
+                            "error", "PAYMENT_INTENT_EXPIRED",
+                            "message", "Phiên thanh toán đã hết hạn. Vui lòng quay lại Checkout và thanh toán lại.",
+                            "orderNumber", orderNumber
+                    ));
         }
 
         AddressSnapshot sa = intent.getShippingAddress();
@@ -203,7 +219,14 @@ public class PaypalController {
         // 6) Xoá intent
         intentStore.remove(orderNumber);
 
-        return Map.of("status", "COMPLETED", "captureId", cap.captureId(), "validation", validate);
+        return  ResponseEntity.ok(
+                Map.of(
+                        "status", "COMPLETED",
+                        "captureId", cap.captureId(),
+                        "validation", validate
+                )
+        );
+
     }
 
     @PostMapping("/cancel")
@@ -227,6 +250,7 @@ public class PaypalController {
             );
 
             intentStore.remove(orderNumber); // dọn intent
+            paymentApp.markCancelled(orderNumber);
             return Map.of("cancelled", true, "orderNumber", orderNumber);
         }
         return Map.of("cancelled", false, "reason", "PaymentIntent not found or mismatched");

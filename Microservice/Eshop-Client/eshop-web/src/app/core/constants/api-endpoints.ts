@@ -29,7 +29,7 @@ export const API = {
     FEATURED: (type: string, page=1, size=10) =>
       `/api/products/featured?type=${type}&page=${page}&size=${size}`,
   },
-      CART: {
+    CART: {
     // GET & POST /api/cart/items
     VIEW: '/api/cart/items',
     // PATCH /api/cart/items/{productId}

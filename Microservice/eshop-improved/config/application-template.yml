@@ -1,0 +1,229 @@
+# =============================================================================
+# EShop Microservice - Application Configuration Template
+# =============================================================================
+# Copy this file and customize for each service
+# =============================================================================
+
+spring:
+  application:
+    name: ${SERVICE_NAME:eshop-service}
+  
+  profiles:
+    active: ${SPRING_PROFILES_ACTIVE:local}
+
+  # ===== Database Configuration =====
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/eshop?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:root}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      pool-name: ${spring.application.name}-pool
+      maximum-pool-size: 20
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+      max-lifetime: 1200000
+      leak-detection-threshold: 60000
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+        format_sql: true
+        use_sql_comments: true
+        jdbc:
+          batch_size: 50
+        order_inserts: true
+        order_updates: true
+
+  # ===== Redis Configuration =====
+  redis:
+    host: ${SPRING_REDIS_HOST:localhost}
+    port: ${SPRING_REDIS_PORT:6379}
+    password: ${SPRING_REDIS_PASSWORD:}
+    database: 0
+    timeout: 5000
+    lettuce:
+      pool:
+        max-active: 16
+        max-idle: 8
+        min-idle: 2
+        max-wait: 2000
+    # Cluster configuration (enable in production)
+    cluster:
+      enabled: ${SPRING_REDIS_CLUSTER_ENABLED:false}
+      nodes: ${SPRING_REDIS_CLUSTER_NODES:}
+
+  # ===== Kafka Configuration =====
+  kafka:
+    bootstrap-servers: ${SPRING_KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+    consumer:
+      group-id: ${spring.application.name}-group
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "com.eshop.*"
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+
+# ===== Custom Kafka Settings =====
+kafka:
+  producer:
+    idempotence: true
+    retries: 3
+    batch-size: 16384
+    linger-ms: 5
+    compression-type: snappy
+  consumer:
+    concurrency: 3
+    max-retries: 3
+    retry-interval-ms: 1000
+    max-retry-interval-ms: 10000
+  topic:
+    partitions: 3
+    replication-factor: 1
+
+# ===== Outbox Configuration =====
+outbox:
+  publisher:
+    interval-ms: 500
+    batch-size: 50
+    stuck-threshold-seconds: 300
+    cleanup-days: 7
+    cleanup-cron: "0 0 3 * * *"
+    recovery-interval-ms: 60000
+
+# ===== Async Thread Pool Configuration =====
+async:
+  io:
+    core-pool-size: ${ASYNC_IO_CORE_SIZE:16}
+    max-pool-size: ${ASYNC_IO_MAX_SIZE:32}
+    queue-capacity: 500
+  cpu:
+    core-pool-size: ${ASYNC_CPU_CORE_SIZE:8}
+    max-pool-size: ${ASYNC_CPU_MAX_SIZE:9}
+    queue-capacity: 100
+  keep-alive-seconds: 60
+  await-termination-seconds: 30
+
+# ===== Server Configuration =====
+server:
+  port: ${SERVER_PORT:8080}
+  shutdown: graceful
+  tomcat:
+    threads:
+      max: 200
+      min-spare: 20
+    accept-count: 100
+    connection-timeout: 20000
+
+# ===== Spring Cloud Config =====
+spring.config.import: optional:configserver:${CONFIG_SERVER_URL:http://localhost:8888}
+
+# ===== Eureka Configuration =====
+eureka:
+  client:
+    service-url:
+      defaultZone: ${EUREKA_CLIENT_SERVICEURL_DEFAULTZONE:http://localhost:8761/eureka}
+    register-with-eureka: true
+    fetch-registry: true
+    registry-fetch-interval-seconds: 10
+  instance:
+    prefer-ip-address: true
+    lease-renewal-interval-in-seconds: 10
+    lease-expiration-duration-in-seconds: 30
+    metadata-map:
+      zone: ${ZONE:default}
+
+# ===== Actuator & Metrics =====
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus,loggers
+  endpoint:
+    health:
+      show-details: when_authorized
+      probes:
+        enabled: true
+  health:
+    livenessState:
+      enabled: true
+    readinessState:
+      enabled: true
+  metrics:
+    tags:
+      application: ${spring.application.name}
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      sla:
+        http.server.requests: 50ms,100ms,200ms,500ms
+
+# ===== Logging =====
+logging:
+  level:
+    root: INFO
+    com.eshop: DEBUG
+    org.springframework.kafka: WARN
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%X{traceId}] %-5level %logger{36} - %msg%n"
+
+# ===== Resilience4j Circuit Breaker =====
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10
+        minimum-number-of-calls: 5
+        failure-rate-threshold: 50
+        slow-call-rate-threshold: 80
+        slow-call-duration-threshold: 3s
+        wait-duration-in-open-state: 30s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+    instances:
+      catalog-service:
+        base-config: default
+      cart-service:
+        base-config: default
+      customer-service:
+        base-config: default
+  retry:
+    configs:
+      default:
+        max-attempts: 3
+        wait-duration: 1s
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - java.io.IOException
+          - java.net.SocketTimeoutException
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 10s
+        cancel-running-future: true
+
+# ===== OpenAPI Documentation =====
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true

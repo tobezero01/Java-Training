@@ -6,7 +6,6 @@ import { Router, NavigationExtras } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { BehaviorSubject, catchError, filter, switchMap, take, throwError } from 'rxjs';
 import { AuthService } from '../services/auth/auth.service';
-import { TokenStorageService } from '../services/token-storage/token-storage.service';
 
 // Biến toàn cục (ngoài hàm) để quản lý trạng thái Refresh
 let isRefreshing = false;

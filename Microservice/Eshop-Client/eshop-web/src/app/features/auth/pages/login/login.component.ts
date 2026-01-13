@@ -2,7 +2,6 @@ import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../../core/services/auth/auth.service';
-import { TokenStorageService } from '../../../../core/services/token-storage/token-storage.service';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { LoginRequest } from '../../models/login-request.model';
@@ -18,7 +17,6 @@ import { AuthStateService } from '../../../../core/services/auth/auth-state.serv
 export class LoginComponent {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
-  private tokenStore = inject(TokenStorageService);
   private router = inject(Router);
   private toastr = inject(ToastrService);
   private ar = inject(ActivatedRoute);

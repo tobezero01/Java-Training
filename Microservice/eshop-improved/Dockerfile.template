@@ -1,0 +1,83 @@
+# =============================================================================
+# Multi-stage Dockerfile for Spring Boot Microservices
+# =============================================================================
+# Features:
+# - Multi-stage build for smaller images
+# - Layer caching optimization
+# - Non-root user for security
+# - JVM tuning for containers
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Stage 1: Build
+# -----------------------------------------------------------------------------
+FROM maven:3.9-eclipse-temurin-17-alpine AS builder
+
+WORKDIR /build
+
+# Copy parent pom first for dependency caching
+COPY pom.xml .
+COPY common-service/pom.xml common-service/
+COPY ${SERVICE_NAME}/pom.xml ${SERVICE_NAME}/
+
+# Download dependencies (cached if pom.xml unchanged)
+RUN mvn dependency:go-offline -B -pl ${SERVICE_NAME} -am
+
+# Copy source code
+COPY common-service/src common-service/src
+COPY ${SERVICE_NAME}/src ${SERVICE_NAME}/src
+
+# Build the application
+RUN mvn clean package -DskipTests -pl ${SERVICE_NAME} -am
+
+# Extract layers for better caching
+WORKDIR /build/${SERVICE_NAME}/target
+RUN java -Djarmode=layertools -jar *.jar extract
+
+# -----------------------------------------------------------------------------
+# Stage 2: Runtime
+# -----------------------------------------------------------------------------
+FROM eclipse-temurin:17-jre-alpine AS runtime
+
+# Install curl for health checks
+RUN apk add --no-cache curl tzdata \
+    && cp /usr/share/zoneinfo/Asia/Ho_Chi_Minh /etc/localtime \
+    && echo "Asia/Ho_Chi_Minh" > /etc/timezone
+
+# Create non-root user
+RUN addgroup -S spring && adduser -S spring -G spring
+
+# Set working directory
+WORKDIR /app
+
+# Copy layers from builder (order matters for caching)
+COPY --from=builder /build/${SERVICE_NAME}/target/dependencies/ ./
+COPY --from=builder /build/${SERVICE_NAME}/target/spring-boot-loader/ ./
+COPY --from=builder /build/${SERVICE_NAME}/target/snapshot-dependencies/ ./
+COPY --from=builder /build/${SERVICE_NAME}/target/application/ ./
+
+# Change ownership to non-root user
+RUN chown -R spring:spring /app
+
+# Switch to non-root user
+USER spring
+
+# Expose service port
+EXPOSE ${SERVICE_PORT}
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:${SERVICE_PORT}/actuator/health || exit 1
+
+# JVM settings optimized for containers
+ENV JAVA_OPTS="-XX:+UseG1GC \
+    -XX:MaxRAMPercentage=75.0 \
+    -XX:InitialRAMPercentage=50.0 \
+    -XX:+UseContainerSupport \
+    -XX:+HeapDumpOnOutOfMemoryError \
+    -XX:HeapDumpPath=/app/logs/heapdump.hprof \
+    -Djava.security.egd=file:/dev/./urandom \
+    -Dspring.backgroundpreinitializer.ignore=true"
+
+# Run the application using Spring Boot layered jar launcher
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS org.springframework.boot.loader.launch.JarLauncher"]

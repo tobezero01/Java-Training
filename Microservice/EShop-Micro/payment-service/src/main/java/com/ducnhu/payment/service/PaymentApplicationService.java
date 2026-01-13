@@ -24,6 +24,40 @@ public class PaymentApplicationService {
     private final PaymentRepository repo;
     private final OutboxService outbox;
 
+    // NEW: lưu Payment ở trạng thái INTENT_CREATED khi tạo PayPal order
+    public void createPendingPayment(String orderNumber,
+                                     Integer customerId,
+                                     String customerEmail,
+                                     Float paymentTotal,
+                                     String currency,
+                                     String paypalOrderId) {
+
+        Payment payment = repo.findByOrderNumber(orderNumber).orElseGet(Payment::new);
+        payment.setOrderNumber(orderNumber);
+        payment.setCustomerId(customerId);
+        payment.setCustomerEmail(customerEmail);
+        payment.setPaypalOrderId(paypalOrderId);
+        payment.setAmount(paymentTotal);
+        payment.setCurrency(currency);
+        payment.setStatus("INTENT_CREATED");
+
+        Instant now = Instant.now();
+        if (payment.getCreatedAt() == null) {
+            payment.setCreatedAt(now);
+        }
+        payment.setUpdatedAt(now);
+        repo.save(payment);
+    }
+
+    // NEW: đánh dấu Payment bị huỷ (user cancel ở PayPal)
+    public void markCancelled(String orderNumber) {
+        repo.findByOrderNumber(orderNumber).ifPresent(p -> {
+            p.setStatus("CANCELLED");
+            p.setUpdatedAt(Instant.now());
+            repo.save(p);
+        });
+    }
+
     public PaypalCaptureResult captureAndPublish(String paypalOrderId,
                                                  String orderNumber,
                                                  Integer customerId,
